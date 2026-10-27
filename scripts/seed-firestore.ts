@@ -1,7 +1,7 @@
 /**
  * Seeds Firestore and Firebase Auth with the deterministic synthetic scenario.
  * Requires FIREBASE_SERVICE_ACCOUNT_KEY in the environment (see .env.example).
- * Every seeded account gets URVARA_DEMO_PASSWORD and a role custom claim.
+ * Every seeded account gets its password from src/data/demoAccounts.ts and a role custom claim.
  *
  *   FIREBASE_SERVICE_ACCOUNT_KEY="$(cat service-account.json)" npm run seed:firestore
  */
@@ -11,14 +11,13 @@ import { getFirestore } from "firebase-admin/firestore";
 import { createSeedState } from "../src/data/seed";
 import { COLLECTIONS } from "../src/repositories/types";
 import { loginIdToEmail } from "../src/lib/firebase";
+import { demoPasswordFor } from "../src/data/demoAccounts";
 
 const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 if (!key) {
   console.error("Set FIREBASE_SERVICE_ACCOUNT_KEY to the service-account JSON first.");
   process.exit(1);
 }
-const password = process.env.URVARA_DEMO_PASSWORD ?? "urvara-demo-2026";
-
 const app = initializeApp({ credential: cert(JSON.parse(key)) });
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -28,6 +27,8 @@ const clean = (v: unknown) => JSON.parse(JSON.stringify(v));
 async function main() {
   for (const user of state.users) {
     const email = loginIdToEmail(user.loginId);
+    const password = demoPasswordFor(user.loginId);
+    if (!password) throw new Error(`No demo password for ${user.loginId} in src/data/demoAccounts.ts`);
     try {
       await auth.getUser(user.id);
       await auth.updateUser(user.id, { email, password, displayName: user.name });
@@ -58,7 +59,7 @@ async function main() {
   batch.set(db.collection("meta").doc("state"), clean({ schemaVersion: state.schemaVersion, now: state.now, scenario: state.scenario }));
   ops++;
   await flush();
-  console.log(`Seeded ${COLLECTIONS.length} collections and ${state.users.length} demo accounts (password: ${password}).`);
+  console.log(`Seeded ${COLLECTIONS.length} collections and ${state.users.length} demo accounts (passwords: DEMO_CREDENTIALS.md).`);
 }
 
 main().catch((e) => {
