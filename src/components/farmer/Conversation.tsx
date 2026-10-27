@@ -194,7 +194,8 @@ export function Conversation() {
       messages: turns,
       facts: buildReplyFacts(state, user, field?.id),
       // Only a real rule-based answer is ground truth; "I've sent it to the owner" must not stop the model answering.
-      hint: { kind: parsed.kind, understood: understood(details, state), draftAnswer: rule && !rule.forwarded ? rule.text : undefined },
+      // Name a field only when the farmer did; a defaulted field pulls unrelated answers towards it.
+      hint: { kind: parsed.kind, understood: parsed.fieldId || parsed.crop ? understood(details, state) : "", draftAnswer: rule && !rule.forwarded ? rule.text : undefined },
     });
 
     const offerIt = field && (OFFERED.includes(parsed.kind) || (parsed.kind === "question" && !aiText && rule?.forwarded));

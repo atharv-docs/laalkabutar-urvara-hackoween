@@ -58,6 +58,8 @@
   - For each message the page builds a plain-text summary of *their* fields, soil readings, 48 h weather and upcoming tasks (`services/replyContext.ts`) and sends it with the conversation to `/api/assistant` (Ollama Cloud).
   - The prompt caps the reply at 3 short sentences / 45 words in the farmer's language, forbids invented numbers, disease certainty and chemical doses, and treats Urvara's rule-based answer (when there is one) as the truth to rephrase.
   - The reply is shown in the chat and, if the farmer sends a report, saved on it (`answerBy: "ai" | "rules"`), labelled "AI answer" on screen, and read aloud with Sarvam TTS (`/api/tts`), falling back to the browser voice.
+  - The model answers any question (crops, livestock, prices, schemes, methods). Farm records go in a separate "reference only" message and are used only when the question is about the farmer's own fields, machines, tasks or weather; earlier prompts that asked for "a reason from the facts" made every answer drift to soil moisture and irrigation.
+  - Reasoning models such as `gpt-oss` ignore `think: false`, so they run with `think: "low"` and a larger token budget; a reply that stops mid-sentence is never spoken.
   - If Ollama is not configured or fails, Sarvam's chat model answers (same Sarvam key); only if both fail is the rule-based answer used.
   - Replies play by themselves: the farmer's tap (mic, send, sample) unlocks a Web Audio context, which browsers then allow to play the reply when it arrives seconds later.
 - **Why:** an LLM explains naturally in Hindi; grounding it in the records and the rule-based answer keeps it honest.

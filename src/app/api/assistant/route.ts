@@ -17,12 +17,12 @@ const SARVAM_CHAT_URL = "https://api.sarvam.ai/v1/chat/completions";
 const KINDS = new Set(["problem", "completion", "resource_request", "question", "condition"]);
 
 const KIND_GOAL: Record<string, string> = {
-  question: "They asked a question: answer it directly first, then give the one reason from the facts.",
+  question: "They asked a question. Answer exactly that question with useful, specific content. Use the farm records only if the question is about their own fields, crops, machines, tasks or weather.",
   problem:
-    "They described a crop problem: explain in plain words what it could mean and that the owner can send someone to check. Give at most one safe, general step (for example, check nearby plants). Do not name a disease as certain, and never suggest a chemical or a dose. The app shows a button to send it to the owner.",
-  completion: "They said work is finished: acknowledge it and mention their next upcoming work if the facts show one. The app shows a button to record it for the owner.",
-  resource_request: "They need something: say when it is next booked for them if the facts show it. The app shows a button to send the request to the owner.",
-  condition: "Reply naturally and briefly; if anything in the facts (rain, soil moisture, upcoming work) matters for what they said, mention it.",
+    "They described a crop problem: explain in plain words what it could mean and one safe, general thing to check or do. Do not name a disease as certain, and never suggest a chemical or a dose. The app shows a button to send it to the owner.",
+  completion: "They said work is finished: acknowledge it. The app shows a button to record it for the owner.",
+  resource_request: "They need something: if the records show when it is next booked for them, say so. The app shows a button to send the request to the owner.",
+  condition: "Respond to what they actually said.",
 };
 
 function systemPrompt(req: ReplyRequest): string {
@@ -32,26 +32,30 @@ function systemPrompt(req: ReplyRequest): string {
     en: "simple spoken Indian English",
   }[req.language];
   return [
-    "You are Urvara, a farm assistant having a spoken conversation with a farmer. Every reply is read aloud by a text-to-speech voice.",
+    "You are Urvara, a knowledgeable farm assistant talking with an Indian farmer. Every reply is read aloud by a text-to-speech voice.",
     `Reply in ${language}.`,
-    "Be as concise as possible: at most 3 short sentences, under 45 words in total. No lists, no markdown, no emojis, no headings, no greeting after the first turn.",
-    "Explain to the farmer, in plain words, the thing they asked or told you. Speak to them directly and keep the conversation going naturally; you may ask one short follow-up question when it helps.",
-    "Always answer the farmer's actual question. For anything about this farm (soil moisture, weather, machines, tasks, dates) use only the facts below and never invent numbers, dates, machines or names. For general farming questions, answer from common, safe agricultural practice.",
-    "Never recommend a specific pesticide, chemical or dose, and never claim a disease is certain; say the owner can arrange a check.",
+    "Answer exactly what the farmer asked, whatever the topic: crops, livestock, prices, government schemes, methods, weather or their own farm. Give the actual answer with practical detail, not a deflection.",
+    "Stay on the topic of their message. Do not bring up soil moisture, irrigation, tasks or anything else from the records unless the question is about it. Do not end with an unrelated question or reminder.",
+    "Be concise: at most 3 short sentences, under 50 words. No lists, no markdown, no emojis, no headings, no greeting after the first turn.",
+    "For anything about this farmer's own farm (their soil readings, weather, machines, tasks, dates) use only the records below and never invent numbers, dates, machines or names. For general questions, answer from sound Indian agricultural knowledge. If you truly cannot know something (for example today's exact mandi price or a payment date), say so briefly and tell them where to check.",
+    "On this farm the owner books machines, workers and inputs through Urvara. If the records show no booking for what they ask about, say none is booked for them yet and that they can ask the owner here; never send them to an outside service.",
+    "Never recommend a specific pesticide, chemical or dose, and never claim a disease is certain; for those say an agronomist or the owner can advise.",
     "Write numbers as digits and say units in words (for example 'mm rain' or 'percent').",
-    "",
-    "Facts from the farmer's records:",
-    req.facts,
   ].join("\n");
+}
+
+/** The farmer's records, kept apart from the instructions so the model treats them as reference, not as the topic. */
+function factsNote(req: ReplyRequest): string {
+  return `Reference only, use if the farmer asks about these things:\n${req.facts}`;
 }
 
 /** Urvara's reading of the latest message, given to the model as guidance. */
 function hintNote(req: ReplyRequest): string | null {
   if (!req.hint) return null;
   return [
-    `About the farmer's latest message. Urvara understood it as: ${req.hint.understood}.`,
+    req.hint.understood ? `Urvara's reading of the farmer's latest message: ${req.hint.understood}.` : "",
     KIND_GOAL[req.hint.kind] ?? "",
-    req.hint.draftAnswer ? `This answer is correct; say the same thing, more naturally: ${req.hint.draftAnswer}` : "",
+    req.hint.draftAnswer ? `This answer from the farm records is correct; say the same thing, more naturally: ${req.hint.draftAnswer}` : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -77,30 +81,36 @@ function forSpeech(text: string): string {
 type Prompt = { role: string; content: string }[];
 type Answer = { text: string; provider: "ollama" | "sarvam"; model: string };
 
+/** A reply that stopped mid-sentence should not be spoken. */
+const complete = (text: string) => /[।?!.)"']$/.test(text);
+
 async function askOllama(key: string, prompt: Prompt): Promise<Answer | null> {
   const model = process.env.OLLAMA_MODEL || "gemma4:31b";
+  // Reasoning models (gpt-oss) ignore think:false and spend tokens thinking first: keep that short and leave room for the answer.
+  const reasoning = /^gpt-oss/.test(model);
   try {
     const res = await fetch(OLLAMA_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, stream: false, think: false, messages: prompt, options: { temperature: 0.3, num_predict: 160 } }),
+      body: JSON.stringify({ model, stream: false, think: reasoning ? "low" : false, messages: prompt, options: { temperature: 0.3, num_predict: reasoning ? 1200 : 300 } }),
       signal: AbortSignal.timeout(20_000),
     });
     if (!res.ok) {
       console.error(`Ollama chat failed: ${res.status} ${await res.text().catch(() => "")}`.slice(0, 500));
       return null;
     }
-    const data = (await res.json().catch(() => null)) as { message?: { content?: string } } | null;
+    const data = (await res.json().catch(() => null)) as { message?: { content?: string }; done_reason?: string } | null;
     const text = forSpeech(data?.message?.content ?? "");
-    return text ? { text, provider: "ollama", model } : null;
+    if (!text || data?.done_reason === "length" || !complete(text)) {
+      console.error(`Ollama reply incomplete (${data?.done_reason}): ${text.slice(0, 80)}`);
+      return null;
+    }
+    return { text, provider: "ollama", model };
   } catch {
     console.error("Ollama chat did not respond");
     return null;
   }
 }
-
-/** A reply that stopped mid-sentence (Sarvam occasionally does) should not be spoken. */
-const complete = (text: string) => /[।?!.)"']$/.test(text);
 
 async function askSarvam(key: string, prompt: Prompt): Promise<Answer | null> {
   const model = process.env.SARVAM_CHAT_MODEL || "sarvam-105b-conversations";
@@ -161,6 +171,7 @@ export async function POST(request: Request) {
   const note = hintNote(req);
   const prompt: Prompt = [
     { role: "system", content: systemPrompt(req) },
+    { role: "system", content: factsNote(req) },
     ...req.messages.slice(0, -1),
     ...(note ? [{ role: "system", content: note }] : []),
     req.messages[req.messages.length - 1],
