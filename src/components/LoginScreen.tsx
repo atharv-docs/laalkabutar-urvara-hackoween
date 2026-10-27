@@ -3,39 +3,85 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, KeyRound, LayoutDashboard, Mic } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import type { Role } from "@/types";
 import { useUrvara } from "@/components/providers/UrvaraProvider";
 import { DataSourceBadge, Logo, Wordmark } from "@/components/ui/domain";
 import { Button, FieldError, Label, TextInput } from "@/components/ui/primitives";
 
-/** The furrow lines from the Urvara mark, drawn as one quiet field across the brand panel. */
-function Furrows() {
+/**
+ * Contour lines of a low hill, as on a survey map of the farm. Each ring is the
+ * same wobbled circle at a smaller radius, so the rings never cross.
+ */
+const CONTOURS = Array.from({ length: 9 }, (_, ring) => {
+  const r = 90 + ring * 46;
+  const points = Array.from({ length: 73 }, (_, i) => {
+    const t = (i / 72) * Math.PI * 2;
+    const k = r * (1 + 0.07 * Math.sin(3 * t + ring * 0.35) + 0.04 * Math.cos(5 * t - ring * 0.2));
+    return `${(500 + k * Math.cos(t) * 1.25).toFixed(1)},${(470 + k * Math.sin(t)).toFixed(1)}`;
+  });
+  return `M${points.join("L")}Z`;
+});
+
+function Contours() {
   return (
-    <svg aria-hidden viewBox="0 0 600 260" preserveAspectRatio="none" className="pointer-events-none absolute inset-x-0 bottom-0 h-56 w-full opacity-[0.16]">
-      {Array.from({ length: 9 }, (_, i) => (
-        <path key={i} d={`M ${-40 + i * 70} 260 C ${80 + i * 60} ${150 - i * 4}, ${260 + i * 40} ${70 + i * 6}, ${640} ${40 + i * 26}`} fill="none" stroke="#f6f3e9" strokeWidth={14} strokeLinecap="round" />
-      ))}
+    <svg aria-hidden viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid slice" className="pointer-events-none absolute inset-0 h-full w-full">
+      <g fill="none" stroke="#8faf8a" strokeWidth={1.25} opacity={0.22} transform="translate(260 120)">
+        {CONTOURS.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
+      </g>
     </svg>
   );
 }
 
-const COPY: Record<Role, { title: string; hint: string; placeholder: string; switchLabel: string; switchHref: string }> = {
+/** The forest panel ends in a soft field boundary instead of a ruled edge. */
+function FieldEdge() {
+  return (
+    <svg aria-hidden viewBox="0 0 40 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-y-0 left-full hidden h-full w-10 lg:block">
+      <path d="M0 0 H6 C30 18, 34 40, 22 58 C12 74, 16 88, 10 100 H0 Z" fill="#234735" />
+    </svg>
+  );
+}
+
+interface Copy {
+  title: string;
+  /** Hindi line under the title; the Farmer Portal is bilingual. */
+  titleHi?: string;
+  hint: string;
+  placeholder: string;
+  idHint?: string;
+  passwordHint?: string;
+  submitHi?: string;
+  switchLead: string;
+  switchLabel: string;
+  switchHref: string;
+}
+
+const COPY: Record<Role, Copy> = {
   farmer: {
-    title: "Farmer sign in",
-    hint: "Use the login ID and password from the farm owner. Farmers added later use their one-time code as the password.",
+    title: "Sign in to your farm",
+    titleHi: "अपने खेत में लॉगिन करें",
+    hint: "Use the login ID and password from your farm owner. New farmers use their one-time code as the password.",
     placeholder: "URV-F-0001",
-    switchLabel: "Farm owner? Sign in to the Owner Portal",
+    idHint: "लॉगिन आईडी",
+    passwordHint: "पासवर्ड",
+    submitHi: "लॉगिन करें",
+    switchLead: "Farm owner?",
+    switchLabel: "Sign in to the Owner Portal",
     switchHref: "/login/owner",
   },
   owner: {
-    title: "Owner sign in",
-    hint: "Sign in to the Owner Portal with your owner login ID and password.",
+    title: "Owner Portal",
+    hint: "Review performance, approve replans and coordinate work across all your farms.",
     placeholder: "URV-O-0001",
-    switchLabel: "Back to farmer sign in",
+    switchLead: "Working on a farm?",
+    switchLabel: "Go to farmer sign in",
     switchHref: "/login",
   },
 };
+
+const HEADLINE = ["Every Farm.", "Every Resource.", "In Sync."];
 
 export function LoginScreen({ role }: { role: Role }) {
   const { session, user, sessionReady, signInWithCredential } = useUrvara();
@@ -44,6 +90,7 @@ export function LoginScreen({ role }: { role: Role }) {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
   const copy = COPY[role];
 
   useEffect(() => {
@@ -64,78 +111,117 @@ export function LoginScreen({ role }: { role: Role }) {
   }
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-      <section className="relative overflow-hidden bg-forest px-5 pb-6 pt-6 text-ivory sm:pb-10 sm:pt-8 sm:px-10 lg:flex lg:flex-col lg:px-14 lg:pb-14 lg:pt-12">
-        <div className="relative flex items-center gap-3">
-          <Logo size={52} ground="dark" />
-          <Wordmark tone="light" size="lg" />
+    <div className="grid min-h-dvh grid-cols-[minmax(0,1fr)] bg-canvas lg:grid-cols-[58fr_42fr]">
+      <section className="relative z-10 bg-forest text-ivory">
+        <div className="absolute inset-0 overflow-hidden">
+          <Contours />
         </div>
-        <div className="relative mt-5 max-w-xl sm:mt-8 lg:mt-auto">
-          <h1 className="text-[1.625rem] font-semibold leading-[1.1] tracking-[-0.02em] text-ivory sm:text-[2.5rem]">Every Farm. Every Resource. In Sync.</h1>
-          <p className="mt-4 hidden max-w-lg text-lg leading-relaxed text-ivory/85 sm:block">
-            Urvara watches weather, soil, crop reports, machines and people across all your farms, plans the work, and replans when something changes. It shows what changed, why, and what needs your approval.
+        <FieldEdge />
+
+        <div className="relative flex h-full flex-col px-5 pb-7 pt-6 sm:px-12 sm:pt-10 lg:px-16 lg:pb-12 lg:pt-14 xl:px-24">
+          <div className="flex items-center gap-3">
+            <Logo size={44} ground="dark" />
+            <Wordmark tone="light" size="lg" />
+          </div>
+
+          <h1 className="mt-8 font-semibold leading-[0.98] tracking-[-0.035em] text-ivory [font-size:clamp(2.5rem,5.4vw,5.5rem)] sm:mt-16 lg:mt-auto">
+            {HEADLINE.map((line, i) => (
+              <span key={line} className="block motion-safe:animate-terrace" style={{ paddingLeft: `${i * 0.7}em`, animationDelay: `${120 + i * 140}ms` }}>
+                {line}
+              </span>
+            ))}
+          </h1>
+
+          <p className="mt-6 hidden max-w-[34rem] text-lg leading-relaxed text-ivory/80 sm:block lg:mt-8" style={{ marginLeft: "clamp(0rem, 2.6vw, 2.5rem)" }}>
+            Urvara watches weather, soil, crop reports, machines and people across your farms. It plans the work, replans when something changes, and shows you why.
           </p>
-          <p className="mt-2 text-ivory/85 sm:hidden">Plans the work across your farms and replans when weather, machines or crops change.</p>
-          <ul className="mt-6 hidden gap-2 text-ivory/90 sm:grid sm:grid-cols-2">
-            <li className="flex items-start gap-2">
-              <LayoutDashboard aria-hidden className="mt-0.5 size-5 shrink-0 text-gold" />
-              <span>
-                <strong className="font-semibold text-ivory">Owner Portal</strong>: performance, approvals and coordination
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Mic aria-hidden className="mt-0.5 size-5 shrink-0 text-gold" />
-              <span>
-                <strong className="font-semibold text-ivory">Farmer Portal</strong>: voice-first, Hindi and English, on any phone
-              </span>
-            </li>
-          </ul>
+
+          <dl className="mt-10 hidden max-w-2xl grid-cols-2 gap-x-10 border-t border-ivory/15 pt-6 sm:grid lg:mt-16">
+            <div>
+              <dt className="font-semibold text-gold">Owner Portal</dt>
+              <dd className="mt-1 text-[0.9375rem] leading-snug text-ivory/70">Performance, approvals and coordination across every farm.</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-gold">Farmer Portal</dt>
+              <dd className="mt-1 text-[0.9375rem] leading-snug text-ivory/70">Voice-first, in Hindi and English, on any phone.</dd>
+            </div>
+          </dl>
+          <p className="mt-8 hidden text-sm text-ivory/50 sm:block">Built by Laal Kabutar for Hackoween 2026</p>
         </div>
-        <p className="relative mt-4 text-sm text-ivory/60 sm:mt-8 lg:mt-12">Built by Laal Kabutar for Hackoween 2026</p>
-        <Furrows />
       </section>
 
-      <section className="flex flex-col px-5 py-8 sm:px-10 lg:justify-center lg:px-16">
-        <div className="mx-auto w-full max-w-md">
-          <form onSubmit={submit} className="rounded-panel border border-line bg-surface p-5 shadow-panel" noValidate>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                {role === "owner" ? <LayoutDashboard aria-hidden className="size-5 text-forest" /> : <KeyRound aria-hidden className="size-5 text-forest" />}
-                <h2 className="text-xl font-semibold">{copy.title}</h2>
-              </div>
-              <DataSourceBadge />
-            </div>
-            <p className="mt-1 text-sm text-ink">{copy.hint}</p>
-            <div className="mt-4 grid gap-3">
+      <section className="flex flex-col px-5 pb-6 pt-8 sm:px-12 lg:pb-10 lg:pl-28 lg:pr-14 lg:pt-14 xl:pl-32">
+        <div className="flex justify-end">
+          <DataSourceBadge />
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center py-6 sm:py-10 lg:py-16">
+          <div className="w-full max-w-sm">
+            <h2 className="text-[1.875rem] font-semibold leading-tight tracking-[-0.02em] text-ink-strong">{copy.title}</h2>
+            {copy.titleHi && <p className="mt-1 text-lg text-sage-ink">{copy.titleHi}</p>}
+            <p className="mt-3 leading-relaxed text-ink">{copy.hint}</p>
+
+            <form onSubmit={submit} className="mt-8 grid gap-5" noValidate>
               <div>
-                <Label htmlFor="login-id">Login ID</Label>
-                <TextInput id="login-id" autoComplete="username" placeholder={copy.placeholder} value={loginId} onChange={(e) => setLoginId(e.target.value)} aria-invalid={!!error} aria-describedby={error ? "login-error" : undefined} />
-              </div>
-              <div>
-                <Label htmlFor="login-secret">Password</Label>
+                <Label htmlFor="login-id" hint={copy.idHint}>
+                  Login ID
+                </Label>
                 <TextInput
-                  id="login-secret"
-                  type="password"
-                  autoComplete="current-password"
-                  value={secret}
-                  onChange={(e) => setSecret(e.target.value)}
+                  id="login-id"
+                  autoComplete="username"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  placeholder={copy.placeholder}
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
                   aria-invalid={!!error}
                   aria-describedby={error ? "login-error" : undefined}
+                  className="h-[3.25rem] px-4 text-[1.0625rem] tracking-wide"
                 />
               </div>
-            </div>
-            <FieldError id="login-error">{error}</FieldError>
-            <Button type="submit" className="mt-4 w-full" loading={busy} icon={ArrowRight}>
-              Sign in
-            </Button>
-          </form>
-          <p className="mt-3 text-center text-sm">
-            <Link href={copy.switchHref} className="inline-flex items-center gap-1 text-ink-muted underline-offset-4 hover:text-forest hover:underline">
-              {role === "owner" && <ArrowLeft aria-hidden className="size-3.5" />}
-              {copy.switchLabel}
-            </Link>
-          </p>
+              <div>
+                <Label htmlFor="login-secret" hint={copy.passwordHint}>
+                  Password
+                </Label>
+                <div className="relative">
+                  <TextInput
+                    id="login-secret"
+                    type={showSecret ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={secret}
+                    onChange={(e) => setSecret(e.target.value)}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? "login-error" : undefined}
+                    className="h-[3.25rem] px-4 pr-14 text-[1.0625rem]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSecret((v) => !v)}
+                    aria-label={showSecret ? "Hide password" : "Show password"}
+                    aria-pressed={showSecret}
+                    className="absolute right-1.5 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-control text-ink-muted transition-colors hover:bg-forest-tint/70 hover:text-forest"
+                  >
+                    {showSecret ? <EyeOff aria-hidden className="size-5" /> : <Eye aria-hidden className="size-5" />}
+                  </button>
+                </div>
+                <FieldError id="login-error">{error}</FieldError>
+              </div>
+              <Button type="submit" size="lg" className="mt-1 h-[3.25rem] w-full text-[1.0625rem]" loading={busy}>
+                Sign in
+                {copy.submitHi && <span className="font-medium text-ivory/75">{copy.submitHi}</span>}
+              </Button>
+            </form>
+
+            <p className="mt-8 border-t border-line pt-5 text-sm text-ink-muted">
+              {copy.switchLead}{" "}
+              <Link href={copy.switchHref} className="font-semibold text-forest underline decoration-line-strong underline-offset-4 hover:decoration-forest">
+                {copy.switchLabel}
+              </Link>
+            </p>
+          </div>
         </div>
+
+        <p className="text-xs text-ink-muted">Synthetic demo data for Nashik district. No real farmers or farms.</p>
       </section>
     </div>
   );

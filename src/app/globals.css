@@ -52,6 +52,7 @@
 
   --animate-record: record-pulse 1.6s ease-out infinite;
   --animate-rise: rise 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-terrace: terrace 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes record-pulse {
@@ -62,6 +63,12 @@
 @keyframes rise {
   from { transform: translateY(6px); opacity: 0.4; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* Login headline: each terrace line settles into place, one after another. */
+@keyframes terrace {
+  from { transform: translateX(-0.35em); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes shimmer {
