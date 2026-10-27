@@ -3,11 +3,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LayoutDashboard, Mic, type LucideIcon } from "lucide-react";
 import type { Role } from "@/types";
 import { useUrvara } from "@/components/providers/UrvaraProvider";
 import { DataSourceBadge, Logo, Wordmark } from "@/components/ui/domain";
-import { Button, FieldError, Label, TextInput } from "@/components/ui/primitives";
+import { Button, FieldError, Label, TextInput, cx } from "@/components/ui/primitives";
 
 /**
  * Contour lines of a low hill, as on a survey map of the farm. Each ring is the
@@ -45,6 +45,9 @@ function FieldEdge() {
 }
 
 interface Copy {
+  portal: string;
+  portalHi: string;
+  icon: LucideIcon;
   title: string;
   /** Hindi line under the title; the Farmer Portal is bilingual. */
   titleHi?: string;
@@ -60,6 +63,9 @@ interface Copy {
 
 const COPY: Record<Role, Copy> = {
   farmer: {
+    portal: "Farmer Portal",
+    portalHi: "किसान पोर्टल",
+    icon: Mic,
     title: "Sign in to your farm",
     titleHi: "अपने खेत में लॉगिन करें",
     hint: "Use the login ID and password from your farm owner. New farmers use their one-time code as the password.",
@@ -72,7 +78,10 @@ const COPY: Record<Role, Copy> = {
     switchHref: "/login/owner",
   },
   owner: {
-    title: "Owner Portal",
+    portal: "Owner Portal",
+    portalHi: "मालिक पोर्टल",
+    icon: LayoutDashboard,
+    title: "Sign in to your farms",
     hint: "Review performance, approve replans and coordinate work across all your farms.",
     placeholder: "URV-O-0001",
     switchLead: "Working on a farm?",
@@ -82,6 +91,42 @@ const COPY: Record<Role, Copy> = {
 };
 
 const HEADLINE = ["Every Farm.", "Every Resource.", "In Sync."];
+
+const PORTALS: { role: Role; href: string }[] = [
+  { role: "farmer", href: "/login" },
+  { role: "owner", href: "/login/owner" },
+];
+
+const PORTAL_BLURB: Record<Role, string> = {
+  owner: "Performance, approvals and coordination across every farm.",
+  farmer: "Voice-first, in Hindi and English, on any phone.",
+};
+
+/** Two-way switch between the portals' sign-in pages; the current one is marked. */
+function PortalTabs({ role }: { role: Role }) {
+  return (
+    <nav aria-label="Choose portal" className="grid grid-cols-2 gap-1 rounded-control border border-line-strong bg-sunken p-1">
+      {PORTALS.map((p) => {
+        const c = COPY[p.role];
+        const active = p.role === role;
+        return (
+          <Link
+            key={p.role}
+            href={p.href}
+            aria-current={active ? "page" : undefined}
+            className={cx(
+              "flex items-center justify-center gap-2 rounded-[4px] px-3 py-2 text-sm font-semibold transition-colors",
+              active ? "bg-surface text-forest shadow-panel" : "text-ink hover:text-ink-strong",
+            )}
+          >
+            <c.icon aria-hidden className="size-4" />
+            {c.portal}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export function LoginScreen({ role }: { role: Role }) {
   const { session, user, sessionReady, signInWithCredential } = useUrvara();
@@ -136,32 +181,55 @@ export function LoginScreen({ role }: { role: Role }) {
             Urvara watches weather, soil, crop reports, machines and people across your farms. It plans the work, replans when something changes, and shows you why.
           </p>
 
-          <dl className="mt-10 hidden max-w-2xl grid-cols-2 gap-x-10 border-t border-ivory/15 pt-6 sm:grid lg:mt-16">
-            <div>
-              <dt className="font-semibold text-gold">Owner Portal</dt>
-              <dd className="mt-1 text-[0.9375rem] leading-snug text-ivory/70">Performance, approvals and coordination across every farm.</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-gold">Farmer Portal</dt>
-              <dd className="mt-1 text-[0.9375rem] leading-snug text-ivory/70">Voice-first, in Hindi and English, on any phone.</dd>
-            </div>
+          <dl className="mt-10 hidden max-w-2xl grid-cols-2 gap-4 sm:grid lg:mt-14">
+            {(["owner", "farmer"] as const).map((r) => {
+              const c = COPY[r];
+              return (
+                <div key={r} className={cx("rounded-panel p-4 ring-1 transition-colors", r === role ? "bg-ivory/10 ring-sage/60" : "bg-ivory/[0.04] ring-ivory/10")}>
+                  <dt className="flex items-center gap-2.5 font-semibold text-gold">
+                    <span className="grid size-8 place-items-center rounded-control bg-ivory/10">
+                      <c.icon aria-hidden className="size-4" />
+                    </span>
+                    {c.portal}
+                    {r === role && <span className="ml-auto text-xs font-semibold text-ivory/60">You are here</span>}
+                  </dt>
+                  <dd className="mt-2 text-[0.9375rem] leading-snug text-ivory/70">{PORTAL_BLURB[r]}</dd>
+                </div>
+              );
+            })}
           </dl>
           <p className="mt-8 hidden text-sm text-ivory/50 sm:block">Built by Laal Kabutar for Hackoween 2026</p>
         </div>
       </section>
 
-      <section className="flex flex-col px-5 pb-6 pt-8 sm:px-12 lg:pb-10 lg:pl-28 lg:pr-14 lg:pt-14 xl:pl-32">
+      <section className="flex flex-col px-4 pb-6 pt-6 sm:px-12 lg:pb-10 lg:pl-24 lg:pr-12 lg:pt-14 xl:pl-28">
         <div className="flex justify-end">
           <DataSourceBadge />
         </div>
 
-        <div className="flex flex-1 flex-col justify-center py-6 sm:py-10 lg:py-16">
-          <div className="w-full max-w-sm">
-            <h2 className="text-[1.875rem] font-semibold leading-tight tracking-[-0.02em] text-ink-strong">{copy.title}</h2>
-            {copy.titleHi && <p className="mt-1 text-lg text-sage-ink">{copy.titleHi}</p>}
-            <p className="mt-3 leading-relaxed text-ink">{copy.hint}</p>
+        <div className="flex flex-1 flex-col justify-center py-5 sm:py-10 lg:py-12">
+          <div className="w-full max-w-md rounded-panel border border-line bg-surface p-5 shadow-raised sm:p-8">
+            <PortalTabs role={role} />
 
-            <form onSubmit={submit} className="mt-8 grid gap-5" noValidate>
+            <div className="mt-7 flex items-start gap-3.5">
+              <span className="grid size-11 shrink-0 place-items-center rounded-panel bg-forest text-ivory">
+                <copy.icon aria-hidden className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-sage-ink">
+                  {copy.portal} · <span lang="hi">{copy.portalHi}</span>
+                </p>
+                <h2 className="mt-0.5 text-[1.75rem] font-semibold leading-tight tracking-[-0.02em] text-ink-strong">{copy.title}</h2>
+                {copy.titleHi && (
+                  <p lang="hi" className="mt-1 text-lg text-sage-ink">
+                    {copy.titleHi}
+                  </p>
+                )}
+              </div>
+            </div>
+            <p className="mt-4 leading-relaxed text-ink">{copy.hint}</p>
+
+            <form onSubmit={submit} className="mt-7 grid gap-5" noValidate>
               <div>
                 <Label htmlFor="login-id" hint={copy.idHint}>
                   Login ID
@@ -212,7 +280,7 @@ export function LoginScreen({ role }: { role: Role }) {
               </Button>
             </form>
 
-            <p className="mt-8 border-t border-line pt-5 text-sm text-ink-muted">
+            <p className="mt-7 border-t border-line pt-5 text-sm text-ink-muted">
               {copy.switchLead}{" "}
               <Link href={copy.switchHref} className="font-semibold text-forest underline decoration-line-strong underline-offset-4 hover:decoration-forest">
                 {copy.switchLabel}

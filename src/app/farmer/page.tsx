@@ -45,7 +45,9 @@ export default function FarmerToday() {
     .sort((a, b) => ms(a.start) - ms(b.start));
   const todays = mine.filter((task) => istDate(task.start) === today || isOverdue(task, state.now) || task.status === "in_progress" || task.status === "blocked");
   const upcoming = mine.filter((task) => !todays.includes(task) && ms(task.start) > ms(state.now) && task.status !== "done").slice(0, 5);
-  const alerts = farmerAlerts(state, user);
+  const allAlerts = farmerAlerts(state, user);
+  const riskAlerts = allAlerts.filter((a) => a.kind === "risk");
+  const alerts = allAlerts.filter((a) => a.kind !== "risk");
 
   const start = (task: Task) =>
     run((s) => updateTaskStatus(s, task.id, "in_progress", user.id), { success: tx(lang, "startedToast"), undoable: true });
@@ -75,25 +77,32 @@ export default function FarmerToday() {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="min-w-0 space-y-8">
-        <header>
-          <h1 className="flex items-center gap-2 text-[1.75rem] font-semibold leading-tight tracking-[-0.01em] text-ink-strong sm:text-[2.25rem]">
-            {t("greeting")}, {user.name.split(" ")[0]}
-            <Sprout aria-hidden className="size-7 text-sage-ink sm:size-8" />
-          </h1>
-          <p className="mt-1 text-ink">{fmtLongDateLocalised(state.now, lang)}</p>
-          <ul className="mt-3 flex flex-wrap gap-2" aria-label={lang === "hi" ? "काम का सार" : "Work summary"}>
-            <SummaryPill icon={ListChecks}>
-              {inProgress} {tx(lang, "inProgressN")}
-            </SummaryPill>
-            <SummaryPill icon={Clock3}>
-              {upcoming.length} {tx(lang, "upcomingN")}
-            </SummaryPill>
+        <header className="relative overflow-hidden rounded-panel border border-forest/15 bg-forest-tint/60 p-5 sm:p-6">
+          <svg aria-hidden viewBox="0 0 400 160" preserveAspectRatio="none" className="pointer-events-none absolute inset-x-0 bottom-0 h-24 w-full text-forest opacity-[0.06]">
+            <path d="M0 160 C100 120 220 110 400 80 L400 160 Z" fill="currentColor" />
+            <path d="M0 160 C140 140 260 130 400 115 L400 160 Z" fill="currentColor" />
+          </svg>
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="flex items-center gap-2 text-[1.875rem] font-semibold leading-tight tracking-[-0.01em] text-ink-strong sm:text-[2.25rem]">
+                {t("greeting")}, {user.name.split(" ")[0]}
+                <Sprout aria-hidden className="size-7 text-sage-ink sm:size-8" />
+              </h1>
+              <p className="mt-1 text-ink">{fmtLongDateLocalised(state.now, lang)}</p>
+            </div>
+            <WeatherGlance state={state} user={user} lang={lang} />
+          </div>
+          <ul className="relative mt-5 grid grid-cols-3 gap-2.5" aria-label={lang === "hi" ? "काम का सार" : "Work summary"}>
+            <SummaryTile icon={CalendarClock} value={todays.length} label={tr(lang, "tasksToday")} strong />
+            <SummaryTile icon={ListChecks} value={inProgress} label={tx(lang, "inProgressN")} />
+            <SummaryTile icon={Clock3} value={upcoming.length} label={tx(lang, "upcomingN")} />
           </ul>
         </header>
 
-        {alerts.length > 0 && (
+        {allAlerts.length > 0 && (
           <section aria-label={lang === "hi" ? "सूचनाएं" : "Alerts"}>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
+              {riskAlerts.length > 0 && <RiskAlerts alerts={riskAlerts} lang={lang} />}
               {alerts.map((alert) => (
                 <AlertCard key={alert.id} alert={alert} lang={lang} onAck={(taskId) => void run((s) => acknowledgeChange(s, taskId), { success: tx(lang, "ackToast") })} />
               ))}
@@ -142,11 +151,12 @@ export default function FarmerToday() {
   );
 }
 
-function SummaryPill({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+function SummaryTile({ icon: Icon, value, label, strong }: { icon: LucideIcon; value: number; label: string; strong?: boolean }) {
   return (
-    <li className="inline-flex items-center gap-2 rounded-control border border-line bg-surface px-3 py-1.5 text-[0.9375rem] text-ink-strong">
-      <Icon aria-hidden className="size-4 text-ink-muted" />
-      <span className="tabular">{children}</span>
+    <li className={cx("flex min-w-0 flex-col rounded-panel px-3 py-3 sm:px-4", strong ? "bg-forest text-ivory shadow-panel" : "bg-surface/90 text-ink-strong ring-1 ring-line")}>
+      <Icon aria-hidden className={cx("size-5", strong ? "text-sage" : "text-ink-muted")} />
+      <span className={cx("tabular mt-2 text-[1.75rem] font-semibold leading-none", strong ? "text-ivory" : "text-ink-strong")}>{value}</span>
+      <span className={cx("mt-1 text-sm leading-snug", strong ? "text-ivory/85" : "text-ink")}>{label}</span>
     </li>
   );
 }
@@ -228,14 +238,14 @@ function Rail({ title, action, children }: { title: string; action?: ReactNode; 
   );
 }
 
-function WeatherCard({ state, user, lang }: { state: UrvaraState; user: User; lang: Language }) {
+function weatherOutlook(state: UrvaraState, user: User, lang: Language) {
   const w = user.farmIds.map((id) => weatherFor(state, id)).find(Boolean);
   if (!w) return null;
   const now = ms(state.now);
   const next = w.blocks.filter((b) => ms(b.end) > now && ms(b.start) < now + 24 * 3_600_000);
   const peak = Math.max(0, ...next.map((b) => b.rainProb));
   const wet = next.find((b) => b.rainProb >= 30);
-  const level = peak >= 60 ? "rainHigh" : peak >= 30 ? "rainMedium" : "rainLow";
+  const level = peak >= 60 ? ("rainHigh" as const) : peak >= 30 ? ("rainMedium" as const) : ("rainLow" as const);
   const hoursUntil = wet ? Math.max(0, Math.round((ms(wet.start) - now) / 3_600_000)) : null;
   const summary =
     hoursUntil === null
@@ -247,7 +257,26 @@ function WeatherCard({ state, user, lang }: { state: UrvaraState; user: User; la
         : hoursUntil === 0
           ? `${wet!.rainProb}% chance of rain now`
           : `${wet!.rainProb}% chance of rain in ${hoursUntil} hours`;
-  const Icon = wet ? CloudRain : CloudSun;
+  return { w, summary, level, Icon: wet ? CloudRain : CloudSun };
+}
+
+/** On phones the weather card sits far down the page, so the greeting carries a glance of it. */
+function WeatherGlance({ state, user, lang }: { state: UrvaraState; user: User; lang: Language }) {
+  const o = weatherOutlook(state, user, lang);
+  if (!o) return null;
+  return (
+    <p className="flex shrink-0 flex-col items-center rounded-panel bg-surface/90 px-3 py-2 text-center ring-1 ring-line lg:hidden" title={o.summary}>
+      <o.Icon aria-hidden className="size-7 text-forest" strokeWidth={1.75} />
+      <span className="tabular mt-0.5 text-lg font-semibold leading-tight text-ink-strong">{Math.round(o.w.local.tempC)}°C</span>
+      <span className="text-xs text-ink-muted">{lang === "hi" ? `बारिश ${tx(lang, o.level)}` : `Rain ${tx(lang, o.level).toLowerCase()}`}</span>
+    </p>
+  );
+}
+
+function WeatherCard({ state, user, lang }: { state: UrvaraState; user: User; lang: Language }) {
+  const o = weatherOutlook(state, user, lang);
+  if (!o) return null;
+  const { w, summary, level, Icon } = o;
   return (
     <Rail title={tx(lang, "weatherToday")} action={<Provenance source={w.source} at={w.issuedAt} now={state.now} />}>
       <div className="flex items-center gap-4">
@@ -348,6 +377,35 @@ function QuickActions({ lang }: { lang: Language }) {
   );
 }
 
+/** Nearby disease alerts share one message, so they are one card listing each field. */
+function RiskAlerts({ alerts, lang }: { alerts: Alert[]; lang: Language }) {
+  return (
+    <li className="rounded-panel border border-terracotta/50 bg-terracotta-tint/60 p-4">
+      <div className="flex gap-3">
+        <ShieldAlert aria-hidden className="mt-0.5 size-7 shrink-0 text-terracotta-ink" />
+        <div className="min-w-0">
+          <p className="font-semibold text-ink-strong">{tr(lang, "riskWarning")}</p>
+          <p className="text-ink">{tr(lang, "riskWarningBody")}</p>
+        </div>
+      </div>
+      <ul className="mt-3 flex flex-wrap gap-2 pl-10">
+        {alerts.map((a) => (
+          <li key={a.id}>
+            <Link
+              href={a.href}
+              className="inline-flex min-h-11 items-center gap-2 rounded-control border border-terracotta/40 bg-surface px-3.5 font-semibold text-ink-strong transition-colors hover:border-terracotta-ink"
+            >
+              <Sprout aria-hidden className="size-4 text-terracotta-ink" />
+              {a.title}
+              <ChevronRight aria-hidden className="size-4 text-ink-muted" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+}
+
 function AlertCard({ alert, lang, onAck }: { alert: Alert; lang: "en" | "hi"; onAck: (taskId: string) => void }) {
   const isChange = alert.id.startsWith("fa-chg-");
   const isOverdueAlert = alert.id.startsWith("fa-od-");
@@ -362,19 +420,6 @@ function AlertCard({ alert, lang, onAck }: { alert: Alert; lang: "en" | "hi"; on
             {tr(lang, "rainWarning")}: {alert.title} {tr(lang, "rainChance")} {tx(lang, "rainOn")} {fmtDayLocalised(alert.detail, lang)}
           </p>
           <p className="text-ink">{tx(lang, "rainBody")}</p>
-        </div>
-      </li>
-    );
-  }
-  if (alert.kind === "risk") {
-    return (
-      <li className="flex gap-3 rounded-panel border border-terracotta/50 bg-terracotta-tint/60 p-3.5">
-        <ShieldAlert aria-hidden className="mt-0.5 size-7 shrink-0 text-terracotta-ink" />
-        <div>
-          <p className="font-semibold text-ink-strong">
-            {tr(lang, "riskWarning")}: {alert.title}
-          </p>
-          <p className="text-ink">{tr(lang, "riskWarningBody")}</p>
         </div>
       </li>
     );
