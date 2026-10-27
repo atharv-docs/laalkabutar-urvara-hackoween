@@ -28,12 +28,12 @@ No credentials are needed. Without Firebase config the app runs in **DEMO DATA**
 
 ## Demo accounts
 
-On `/login`, pick an account (no password needed in demo mode):
+Every seeded account has its own login ID and password, listed in [DEMO_CREDENTIALS.md](DEMO_CREDENTIALS.md).
 
-- **Owner Portal**: Anjali Deshpande (`URV-O-0001`). 6 farms in Nashik district.
-- **Farmer Portal**: 8 farmers. Ramesh Pawar (`URV-F-0001`, Hindi, tomato, Dindori) is the best one to demo.
+- **Farmer Portal** (`/login`): 8 farmers. Ramesh Pawar (`URV-F-0001`, Hindi, tomato, Dindori) is the best one to demo.
+- **Owner Portal** (`/login/owner`, linked under the farmer sign-in box): Anjali Deshpande (`URV-O-0001`). 6 farms in Nashik district.
 
-A farmer added in **Owner → Farmers** gets a login ID and a one-time code, shown once. They sign in with the login ID and code form on `/login`.
+A farmer added in **Owner → Farmers** gets a login ID and a one-time code, shown once. They sign in on `/login` with the code as their password.
 
 **Tip:** open the Owner Portal and the Farmer Portal in two tabs. Changes sync between tabs instantly.
 
@@ -80,7 +80,6 @@ Copy `.env.example` to `.env.local`.
 - **`NEXT_PUBLIC_FIREBASE_*`**: the Firebase web config. These values are safe in client code; access control comes from Auth and `firestore.rules`. Leave them empty to run in demo mode.
 - **`NEXT_PUBLIC_URVARA_DATA_MODE=demo`**: forces demo mode even when Firebase is configured.
 - **`FIREBASE_SERVICE_ACCOUNT_KEY`**: server-only service-account JSON, used by `/api/farmers` and the seed script. Never commit it.
-- **`URVARA_DEMO_PASSWORD`**: the password the seed script gives to every seeded account.
 
 ### Using Firebase
 
@@ -88,7 +87,7 @@ Copy `.env.example` to `.env.local`.
 2. Deploy the rules: `npx firebase-tools deploy --only firestore:rules`.
 3. Seed the data: `FIREBASE_SERVICE_ACCOUNT_KEY="$(cat service-account.json)" npm run seed:firestore`.
 4. Fill in `NEXT_PUBLIC_FIREBASE_*` and restart. The badge switches to `LIVE DATA`.
-5. Sign in with a login ID (e.g. `URV-O-0001`) and the demo password.
+5. Sign in with a login ID and password from [DEMO_CREDENTIALS.md](DEMO_CREDENTIALS.md).
 
 Roles live in Firebase Auth custom claims, set only by the Admin SDK. A role sent from the browser is never trusted. Farmers can only query their own fields, tasks, reports and scores.
 
@@ -110,7 +109,7 @@ Roles live in Firebase Auth custom claims, set only by the Admin SDK. A role sen
 ## Project layout
 
 ```
-src/app/            routes: (auth)/login, owner/*, farmer/*, api/farmers
+src/app/            routes: (auth)/login, (auth)/login/owner, owner/*, farmer/*, api/farmers
 src/components/     ui/ primitives · owner/ · farmer/
 src/services/       domain logic: scheduler, replanner, resources, risk, rupeeScore, intent, assistant, soil, alerts, analytics
 src/repositories/   DataRepository: LocalDemoRepository, FirestoreRepository

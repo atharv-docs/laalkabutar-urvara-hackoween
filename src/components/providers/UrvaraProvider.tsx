@@ -6,10 +6,11 @@
  * it, and reports success or failure.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { UrvaraState, User } from "@/types";
+import type { Role, UrvaraState, User } from "@/types";
 import { createRepository, EmptyDatabaseError, type DataRepository, type LoadScope } from "@/repositories";
 import { getFirebase, isFirebaseConfigured, loginIdToEmail } from "@/lib/firebase";
 import { hashCredential } from "@/lib/credentials";
+import { demoPasswordFor } from "@/data/demoAccounts";
 import { assessUnscoredReports } from "@/services/risk";
 import { markFirstLogin } from "@/services/farmers";
 import { Toaster, type ToastInput, type ToastItem } from "@/components/ui/Toaster";
@@ -38,7 +39,8 @@ interface UrvaraContextValue {
   reset: () => Promise<void>;
   reload: () => void;
   signInAs: (userId: string) => Promise<void>;
-  signInWithCredential: (loginId: string, secret: string) => Promise<{ ok: boolean; message?: string }>;
+  /** Signs in only if the account belongs to `role`'s portal. */
+  signInWithCredential: (loginId: string, secret: string, role: Role) => Promise<{ ok: boolean; message?: string }>;
   signOut: () => Promise<void>;
   toast: (t: ToastInput) => void;
 }
@@ -215,12 +217,18 @@ export function UrvaraProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithCredential = useCallback<UrvaraContextValue["signInWithCredential"]>(
-    async (loginId, secret) => {
+    async (loginId, secret, role) => {
+      const wrongPortal = role === "owner" ? "This is not an owner account. Use the farmer sign-in." : "This is an owner account. Use the owner sign-in link below.";
       if (repo.source === "live") {
+        const { getFirebase: fb } = await import("@/lib/firebase");
+        const { signInWithEmailAndPassword, signOut: fbSignOut } = await import("firebase/auth");
         try {
-          const { getFirebase: fb } = await import("@/lib/firebase");
-          const { signInWithEmailAndPassword } = await import("firebase/auth");
-          await signInWithEmailAndPassword(fb().auth, loginIdToEmail(loginId), secret);
+          const cred = await signInWithEmailAndPassword(fb().auth, loginIdToEmail(loginId), secret);
+          const { claims } = await cred.user.getIdTokenResult();
+          if (claims.role !== role) {
+            await fbSignOut(fb().auth);
+            return { ok: false, message: wrongPortal };
+          }
           return { ok: true };
         } catch {
           return { ok: false, message: "Login ID or password is not correct." };
@@ -229,11 +237,11 @@ export function UrvaraProvider({ children }: { children: ReactNode }) {
       const current = stateRef.current;
       const candidate = current?.users.find((u) => u.loginId.toLowerCase() === loginId.trim().toLowerCase());
       if (!candidate) return { ok: false, message: "No account with that login ID. Check the ID card from the owner." };
+      if (candidate.role !== role) return { ok: false, message: wrongPortal };
       if (candidate.status === "deactivated") return { ok: false, message: "This account has been deactivated. Contact the farm owner." };
-      if (!candidate.credentialHash) return { ok: false, message: "This seeded demo account has no code. Use the account buttons above." };
-      if ((await hashCredential(candidate.loginId, secret)) !== candidate.credentialHash) {
-        return { ok: false, message: "That code is not correct. Codes look like ABCD-EFGH." };
-      }
+      const seeded = demoPasswordFor(candidate.loginId);
+      const valid = candidate.credentialHash ? (await hashCredential(candidate.loginId, secret)) === candidate.credentialHash : seeded !== undefined && secret.trim() === seeded;
+      if (!valid) return { ok: false, message: "Login ID or password is not correct." };
       await run((s) => markFirstLogin(s, candidate.id));
       await signInAs(candidate.id);
       return { ok: true };

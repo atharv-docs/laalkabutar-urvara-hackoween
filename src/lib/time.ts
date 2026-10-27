@@ -71,6 +71,13 @@ export function fmtRange(start: string, end: string): string {
   return sameDay ? `${fmtDay(start)}, ${fmtTime(start)}–${fmtTime(end)}` : `${fmtDayTime(start)} – ${fmtDayTime(end)}`;
 }
 
+const longDateFmt = { en: new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }), hi: new Intl.DateTimeFormat("hi-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }) };
+
+/** "Wednesday, 28 October" / "बुधवार, 28 अक्टूबर". */
+export function fmtLongDateLocalised(iso: string, lang: "en" | "hi"): string {
+  return longDateFmt[lang].format(new Date(iso));
+}
+
 export function fmtDayLocalised(iso: string, lang: "en" | "hi"): string {
   return lang === "hi" ? hiDayFmt.format(new Date(iso)) : dayFmt.format(new Date(iso));
 }
