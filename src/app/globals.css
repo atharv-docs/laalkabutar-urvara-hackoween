@@ -84,6 +84,8 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+html { scroll-behavior: smooth; }
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
@@ -133,6 +135,7 @@ a { text-underline-offset: 3px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
