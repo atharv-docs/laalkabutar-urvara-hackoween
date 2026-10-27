@@ -1,5 +1,5 @@
-import { VoiceReport } from "@/components/farmer/VoiceReport";
+import { Conversation } from "@/components/farmer/Conversation";
 
 export default function FarmerReportPage() {
-  return <VoiceReport />;
+  return <Conversation />;
 }

@@ -8,6 +8,7 @@ import { Button, Chip, FieldError, Label, PageHeader, Panel, Select, TextInput, 
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cropLabel } from "@/data/crops";
 import { generateTempCredential, hashCredential } from "@/lib/credentials";
+import { LANGUAGE_NAME } from "@/lib/i18n";
 import { ageLabel, fmtDayTime, ms } from "@/lib/time";
 import { createFarmer, nextLoginId, reissueCredential, setAssignments, setFarmerStatus, validateFarmerDraft, type FarmerDraft } from "@/services/farmers";
 
@@ -133,6 +134,7 @@ function AddFarmer({ onDone }: { onDone: () => void }) {
           <Label htmlFor="af-lang">App language</Label>
           <Select id="af-lang" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value as Language })}>
             <option value="hi">हिंदी (Hindi)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
             <option value="en">English</option>
           </Select>
         </div>
@@ -180,7 +182,7 @@ function FarmerRow({ farmer }: { farmer: User }) {
             {deactivated && <Chip tone="neutral" className="ml-2 align-[1px]">Deactivated</Chip>}
           </p>
           <p className="tabular text-sm text-ink-muted">
-            {farmer.loginId} · {farmer.village} · {farmer.language === "hi" ? "हिंदी" : "English"}
+            {farmer.loginId} · {farmer.village} · {LANGUAGE_NAME[farmer.language]}
           </p>
         </div>
         <p className="col-span-2 text-sm text-ink md:col-span-1">

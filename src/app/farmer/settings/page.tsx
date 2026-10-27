@@ -7,7 +7,7 @@ import type { Language } from "@/types";
 import { useReadyState } from "@/components/providers/UrvaraProvider";
 import { getReadAloud, setReadAloud, speechRecognitionSupported, speechSynthesisSupported } from "@/components/farmer/speech";
 import { Button, cx } from "@/components/ui/primitives";
-import { tr } from "@/lib/i18n";
+import { LANGUAGE_NAME, tr } from "@/lib/i18n";
 import { tx } from "@/lib/i18n-farmer-extra";
 import { setLanguage } from "@/services/farmers";
 
@@ -17,10 +17,14 @@ export default function FarmerSettings() {
   const lang = user.language;
   // Rendered only client-side (behind PortalGate), so browser checks can run in initializers.
   const [readAloud, setReadAloudState] = useState(getReadAloud);
-  const [support] = useState(() => ({ listen: speechRecognitionSupported(), speak: speechSynthesisSupported() }));
+  // Sarvam needs only recording and audio playback; the browser engines are the fallback.
+  const [support] = useState(() => ({
+    listen: speechRecognitionSupported() || typeof MediaRecorder !== "undefined",
+    speak: typeof Audio !== "undefined" || speechSynthesisSupported(),
+  }));
 
   const choose = (l: Language) => {
-    if (l !== lang) void run((s) => setLanguage(s, user.id, l), { success: tr(l, "language") + ": " + (l === "hi" ? "हिंदी" : "English") });
+    if (l !== lang) void run((s) => setLanguage(s, user.id, l), { success: tr(l, "language") + ": " + LANGUAGE_NAME[l] });
   };
 
   return (
@@ -30,7 +34,7 @@ export default function FarmerSettings() {
       <section className="rounded-panel border border-line bg-surface p-4">
         <h2 className="text-lg font-semibold">{tr(lang, "language")}</h2>
         <div role="radiogroup" aria-label={tr(lang, "language")} className="mt-3 grid grid-cols-2 gap-2">
-          {(["hi", "en"] as const).map((l) => (
+          {(["hi", "pa", "en"] as const).map((l) => (
             <button
               key={l}
               type="button"
@@ -43,7 +47,7 @@ export default function FarmerSettings() {
                 lang === l ? "border-forest bg-forest-tint text-forest" : "border-line bg-surface text-ink-strong hover:border-forest/40",
               )}
             >
-              {l === "hi" ? "हिंदी" : "English"}
+              {LANGUAGE_NAME[l]}
             </button>
           ))}
         </div>

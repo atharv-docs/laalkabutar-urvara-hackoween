@@ -15,7 +15,9 @@ export interface AssistantAnswer {
   forwarded: boolean;
 }
 
-const t = (lang: Language, en: string, hi: string) => (lang === "hi" ? hi : en);
+const t = (lang: Language, en: string, hi: string, pa: string) => ({ en, hi, pa })[lang];
+
+const forecastLabel = (provider: string) => (/forecast$/i.test(provider) ? provider : `${provider} forecast`);
 
 export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtterance, lang: Language): AssistantAnswer {
   const fields = state.fields.filter((f) => user.fieldIds.includes(f.id));
@@ -40,6 +42,7 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
           lang,
           `No ${category} is booked for your fields right now. I have sent your question to the owner.`,
           `अभी आपके खेतों के लिए कोई ${parsed.requestedResource === "Sprayer" ? "स्प्रेयर" : parsed.requestedResource === "Tractor" ? "ट्रैक्टर" : "हार्वेस्टर"} बुक नहीं है। आपका सवाल मालिक को भेज दिया गया है।`,
+          `ਹਾਲੇ ਤੁਹਾਡੇ ਖੇਤਾਂ ਲਈ ਕੋਈ ${parsed.requestedResource === "Sprayer" ? "ਸਪਰੇਅਰ" : parsed.requestedResource === "Tractor" ? "ਟਰੈਕਟਰ" : "ਹਾਰਵੈਸਟਰ"} ਬੁੱਕ ਨਹੀਂ ਹੈ। ਤੁਹਾਡਾ ਸਵਾਲ ਮਾਲਕ ਨੂੰ ਭੇਜ ਦਿੱਤਾ ਗਿਆ ਹੈ।`,
         ),
         sources: [{ label: "Task schedule", at: state.now, provenance: "seeded" }],
         forwarded: true,
@@ -52,6 +55,7 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
         lang,
         `${machine.name} is booked for ${fieldName} on ${fmtDayLocalised(next.start, "en")} at ${fmtTimeLocalised(next.start, "en")} for "${next.title}".`,
         `${machine.name} ${fmtDayLocalised(next.start, "hi")} को ${fmtTimeLocalised(next.start, "hi")} बजे ${fieldName} पर "${next.title}" के लिए आएगा।`,
+        `${machine.name} ${fmtDayLocalised(next.start, "pa")} ਨੂੰ ${fmtTimeLocalised(next.start, "pa")} ਵਜੇ ${fieldName} ਤੇ "${next.title}" ਲਈ ਆਵੇਗਾ।`,
       ),
       sources: [{ label: `Schedule for ${machine.name}`, at: state.now, provenance: "seeded" }],
       forwarded: false,
@@ -65,9 +69,9 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
     const rain24 = blocksOverlapping(snapshot, state.now, addHours(state.now, 24)).reduce((s, b) => s + b.rainMm, 0);
     const sources: AssistantAnswer["sources"] = [];
     if (moisture) sources.push({ label: `Soil moisture probe, ${field.name}`, at: moisture.at, provenance: moisture.source });
-    if (snapshot) sources.push({ label: `${snapshot.provider} forecast`, at: snapshot.issuedAt, provenance: snapshot.source });
+    if (snapshot) sources.push({ label: forecastLabel(snapshot.provider), at: snapshot.issuedAt, provenance: snapshot.source });
     if (!moisture) {
-      return { text: t(lang, "There is no soil moisture reading for this field yet. I have asked the owner.", "इस खेत की मिट्टी की नमी का कोई रीडिंग नहीं है। मालिक से पूछा गया है।"), sources, forwarded: true };
+      return { text: t(lang, "There is no soil moisture reading for this field yet. I have asked the owner.", "इस खेत की मिट्टी की नमी का कोई रीडिंग नहीं है। मालिक से पूछा गया है।", "ਇਸ ਖੇਤ ਦੀ ਮਿੱਟੀ ਦੀ ਨਮੀ ਦੀ ਕੋਈ ਰੀਡਿੰਗ ਨਹੀਂ ਹੈ। ਮਾਲਕ ਨੂੰ ਪੁੱਛਿਆ ਗਿਆ ਹੈ।"), sources, forwarded: true };
     }
     const age = ageLabel(moisture.at, state.now);
     if (rain24 >= 8) {
@@ -76,6 +80,7 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
           lang,
           `No need to irrigate ${field.name} today. About ${rain24} mm of rain is expected in the next 24 hours. Soil moisture is ${moisture.value}% (${age}).`,
           `${field.name} में आज सिंचाई की जरूरत नहीं है। अगले 24 घंटे में लगभग ${rain24} मिमी बारिश की संभावना है। मिट्टी की नमी ${moisture.value}% है।`,
+          `${field.name} ਵਿੱਚ ਅੱਜ ਸਿੰਚਾਈ ਦੀ ਲੋੜ ਨਹੀਂ। ਅਗਲੇ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਲਗਭਗ ${rain24} ਮਿਲੀਮੀਟਰ ਮੀਂਹ ਦੀ ਸੰਭਾਵਨਾ ਹੈ। ਮਿੱਟੀ ਦੀ ਨਮੀ ${moisture.value}% ਹੈ।`,
         ),
         sources,
         forwarded: false,
@@ -87,6 +92,7 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
           lang,
           `Yes, ${field.name} is dry: soil moisture is ${moisture.value}% (below ${MOISTURE_LOW}%), measured ${age}. No rain is expected in the next 24 hours.`,
           `हाँ, ${field.name} सूखा है: मिट्टी की नमी ${moisture.value}% है (${MOISTURE_LOW}% से कम)। अगले 24 घंटे में बारिश की संभावना नहीं है।`,
+          `ਹਾਂ, ${field.name} ਸੁੱਕਾ ਹੈ: ਮਿੱਟੀ ਦੀ ਨਮੀ ${moisture.value}% ਹੈ (${MOISTURE_LOW}% ਤੋਂ ਘੱਟ)। ਅਗਲੇ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਮੀਂਹ ਦੀ ਸੰਭਾਵਨਾ ਨਹੀਂ।`,
         ),
         sources,
         forwarded: false,
@@ -97,6 +103,7 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
         lang,
         `Not yet. Soil moisture in ${field.name} is ${moisture.value}% (${age}), which is enough for today. Check again tomorrow morning.`,
         `अभी नहीं। ${field.name} में मिट्टी की नमी ${moisture.value}% है, जो आज के लिए काफी है। कल सुबह फिर देखें।`,
+        `ਹਾਲੇ ਨਹੀਂ। ${field.name} ਵਿੱਚ ਮਿੱਟੀ ਦੀ ਨਮੀ ${moisture.value}% ਹੈ, ਜੋ ਅੱਜ ਲਈ ਕਾਫ਼ੀ ਹੈ। ਕੱਲ੍ਹ ਸਵੇਰੇ ਫਿਰ ਦੇਖੋ।`,
       ),
       sources,
       forwarded: false,
@@ -114,15 +121,16 @@ export function answerQuestion(state: UrvaraState, user: User, parsed: ParsedUtt
           lang,
           `I couldn't find a direct answer to that, so I have sent it to the owner. For reference: the highest rain chance in the next 48 hours is ${wettest.rainProb}% on ${fmtDayLocalised(wettest.start, "en")}.`,
           `इसका सीधा जवाब नहीं मिला, इसलिए सवाल मालिक को भेज दिया गया है। अगले 48 घंटे में बारिश की सबसे ज्यादा संभावना ${wettest.rainProb}% है (${fmtDayLocalised(wettest.start, "hi")})।`,
+          `ਇਸ ਦਾ ਸਿੱਧਾ ਜਵਾਬ ਨਹੀਂ ਮਿਲਿਆ, ਇਸ ਲਈ ਸਵਾਲ ਮਾਲਕ ਨੂੰ ਭੇਜ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਅਗਲੇ 48 ਘੰਟਿਆਂ ਵਿੱਚ ਮੀਂਹ ਦੀ ਸਭ ਤੋਂ ਵੱਧ ਸੰਭਾਵਨਾ ${wettest.rainProb}% ਹੈ (${fmtDayLocalised(wettest.start, "pa")})।`,
         ),
-        sources: [{ label: `${snapshot.provider} forecast`, at: snapshot.issuedAt, provenance: snapshot.source }],
+        sources: [{ label: forecastLabel(snapshot.provider), at: snapshot.issuedAt, provenance: snapshot.source }],
         forwarded: true,
       };
     }
   }
 
   return {
-    text: t(lang, "I couldn't answer that from the farm data, so I have sent your question to the owner.", "इसका जवाब खेत के डेटा से नहीं मिला, इसलिए सवाल मालिक को भेज दिया गया है।"),
+    text: t(lang, "I couldn't answer that from the farm data, so I have sent your question to the owner.", "इसका जवाब खेत के डेटा से नहीं मिला, इसलिए सवाल मालिक को भेज दिया गया है।", "ਇਸ ਦਾ ਜਵਾਬ ਖੇਤ ਦੇ ਡੇਟਾ ਤੋਂ ਨਹੀਂ ਮਿਲਿਆ, ਇਸ ਲਈ ਸਵਾਲ ਮਾਲਕ ਨੂੰ ਭੇਜ ਦਿੱਤਾ ਗਿਆ ਹੈ।"),
     sources: [],
     forwarded: true,
   };

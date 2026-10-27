@@ -40,6 +40,10 @@ export function scoreComponents(record: CropSeasonRecord): ScoreComponent[] {
       counted.length >= MIN_COUNTED_TASKS
         ? `${counted.length} जांचे गए कामों में से ${onTime} समय पर` + (excused.length ? `; ${excused.length} माफ़ (आपके बस से बाहर)` : "")
         : `सिर्फ ${counted.length} जांचे गए काम; कम से कम ${MIN_COUNTED_TASKS} चाहिए`,
+    detailPa:
+      counted.length >= MIN_COUNTED_TASKS
+        ? `${counted.length} ਜਾਂਚੇ ਕੰਮਾਂ ਵਿੱਚੋਂ ${onTime} ਸਮੇਂ ਸਿਰ` + (excused.length ? `; ${excused.length} ਮਾਫ਼ (ਤੁਹਾਡੇ ਵੱਸ ਤੋਂ ਬਾਹਰ)` : "")
+        : `ਸਿਰਫ਼ ${counted.length} ਜਾਂਚੇ ਕੰਮ; ਘੱਟੋ-ਘੱਟ ${MIN_COUNTED_TASKS} ਚਾਹੀਦੇ ਹਨ`,
     sources: record.taskLog.map((t) => t.id),
   };
 
@@ -54,6 +58,7 @@ export function scoreComponents(record: CropSeasonRecord): ScoreComponent[] {
       ? `${record.actualYieldQ} q harvested vs ${record.expectedYieldQ} q expected (${Math.round(ratio * 100)}%)`
       : "Harvest not recorded yet",
     detailHi: hasYield ? `${record.actualYieldQ} क्विंटल उपज, अपेक्षा ${record.expectedYieldQ} क्विंटल (${Math.round(ratio * 100)}%)` : "कटाई अभी दर्ज नहीं हुई",
+    detailPa: hasYield ? `${record.actualYieldQ} ਕੁਇੰਟਲ ਪੈਦਾਵਾਰ, ਉਮੀਦ ${record.expectedYieldQ} ਕੁਇੰਟਲ (${Math.round(ratio * 100)}%)` : "ਵਾਢੀ ਹਾਲੇ ਦਰਜ ਨਹੀਂ ਹੋਈ",
     sources: hasYield ? [`${record.id}:yield`] : [],
   };
 
@@ -64,6 +69,7 @@ export function scoreComponents(record: CropSeasonRecord): ScoreComponent[] {
     value: record.qualityGrade ? GRADE_VALUE[record.qualityGrade] : null,
     detail: record.qualityGrade ? `Grade ${record.qualityGrade} at the mandi / buyer check` : "No quality grade recorded",
     detailHi: record.qualityGrade ? `मंडी / खरीदार जांच में ग्रेड ${record.qualityGrade}` : "गुणवत्ता ग्रेड दर्ज नहीं",
+    detailPa: record.qualityGrade ? `ਮੰਡੀ / ਖ਼ਰੀਦਦਾਰ ਜਾਂਚ ਵਿੱਚ ਗ੍ਰੇਡ ${record.qualityGrade}` : "ਗੁਣਵੱਤਾ ਗ੍ਰੇਡ ਦਰਜ ਨਹੀਂ",
     sources: record.qualityGrade ? [`${record.id}:grade`] : [],
   };
 
@@ -80,6 +86,9 @@ export function scoreComponents(record: CropSeasonRecord): ScoreComponent[] {
     detailHi: record.incidents.length
       ? `${record.incidents.length} में से ${record.incidents.filter((i) => i.resolved).length} समस्याएं सुलझीं; ${record.incidents.filter((i) => i.reportedWithinHours <= 24).length} की खबर 24 घंटे में दी`
       : "इस मौसम में फसल की कोई समस्या दर्ज नहीं",
+    detailPa: record.incidents.length
+      ? `${record.incidents.length} ਵਿੱਚੋਂ ${record.incidents.filter((i) => i.resolved).length} ਸਮੱਸਿਆਵਾਂ ਹੱਲ ਹੋਈਆਂ; ${record.incidents.filter((i) => i.reportedWithinHours <= 24).length} ਦੀ ਖ਼ਬਰ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਦਿੱਤੀ`
+      : "ਇਸ ਮੌਸਮ ਵਿੱਚ ਫ਼ਸਲ ਦੀ ਕੋਈ ਸਮੱਸਿਆ ਦਰਜ ਨਹੀਂ",
     sources: record.incidents.map((i) => i.id),
   };
 
@@ -95,6 +104,7 @@ export function scoreComponents(record: CropSeasonRecord): ScoreComponent[] {
       ? `₹${Math.round(costPerQ).toLocaleString("en-IN")} input cost per quintal vs ₹${benchmark.toLocaleString("en-IN")} benchmark`
       : "Input costs or harvest not recorded",
     detailHi: hasCost ? `प्रति क्विंटल लागत ₹${Math.round(costPerQ).toLocaleString("en-IN")}, मानक ₹${benchmark.toLocaleString("en-IN")}` : "लागत या कटाई दर्ज नहीं",
+    detailPa: hasCost ? `ਪ੍ਰਤੀ ਕੁਇੰਟਲ ਲਾਗਤ ₹${Math.round(costPerQ).toLocaleString("en-IN")}, ਮਿਆਰ ₹${benchmark.toLocaleString("en-IN")}` : "ਲਾਗਤ ਜਾਂ ਵਾਢੀ ਦਰਜ ਨਹੀਂ",
     sources: hasCost ? [`${record.id}:costs`] : [],
   };
 

@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 const SARVAM_URL = "https://api.sarvam.ai/speech-to-text";
 const MAX_BYTES = 5 * 1024 * 1024;
-const LANGUAGES = new Set(["hi-IN", "en-IN"]);
+const LANGUAGES = new Set(["hi-IN", "en-IN", "pa-IN"]);
 
 export function GET() {
   return NextResponse.json({ available: Boolean(process.env.SARVAM_API_KEY) });

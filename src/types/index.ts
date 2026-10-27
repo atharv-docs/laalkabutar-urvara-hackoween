@@ -4,7 +4,7 @@
  */
 
 export type Role = "owner" | "farmer";
-export type Language = "en" | "hi";
+export type Language = "en" | "hi" | "pa";
 
 /** Where a value came from. Never render `simulated` or `seeded` values as live. */
 export type DataProvenance = "live" | "manual" | "simulated" | "seeded";
@@ -102,6 +102,7 @@ export interface Task {
   title: string;
   /** Hindi title for the Farmer Portal; falls back to `title` when absent. */
   titleHi?: string;
+  titlePa?: string;
   type: TaskType;
   farmId: string;
   fieldId: string;
@@ -149,7 +150,7 @@ export type Severity = "low" | "medium" | "high";
 export interface Report {
   id: string;
   kind: ReportKind;
-  /** voice = browser speech transcript; typed = keyboard; demo_sample = seeded sample phrase. */
+  /** voice = speech transcript (Sarvam or browser); typed = keyboard; demo_sample = seeded sample phrase. */
   inputMode: "voice" | "typed" | "demo_sample";
   reporterId: string;
   farmId: string;
@@ -164,6 +165,8 @@ export interface Report {
   status: "unverified" | "reviewed" | "dismissed";
   language: Language;
   answer?: string;
+  /** "ai": Ollama reply grounded in the farmer's records; "rules": Urvara's built-in answer. */
+  answerBy?: "ai" | "rules";
   reviewNote?: string;
   /** Set once the crop-risk module has scored nearby fields for this report. */
   riskAssessedAt?: string;
@@ -241,6 +244,7 @@ export interface ScoreComponent {
   detail: string;
   /** Hindi rendering of `detail` for the Farmer Portal. */
   detailHi?: string;
+  detailPa?: string;
   sources: string[];
 }
 
@@ -256,6 +260,7 @@ export interface RupeeScoreRecord {
   reason: string;
   /** Hindi rendering of `reason` for system-written notes; owner-typed notes stay as written. */
   reasonHi?: string;
+  reasonPa?: string;
 }
 
 export interface ScheduleChange {

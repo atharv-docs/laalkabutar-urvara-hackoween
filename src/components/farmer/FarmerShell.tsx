@@ -9,7 +9,7 @@ import { useUrvara } from "@/components/providers/UrvaraProvider";
 import { PortalGate } from "@/components/PortalGate";
 import { DataSourceBadge, Logo, Wordmark } from "@/components/ui/domain";
 import { Skeleton, cx } from "@/components/ui/primitives";
-import { tr, type I18nKey } from "@/lib/i18n";
+import { LANGUAGE_NAME, pick, tr, type I18nKey } from "@/lib/i18n";
 import { tx } from "@/lib/i18n-farmer-extra";
 import { setLanguage } from "@/services/farmers";
 
@@ -20,8 +20,8 @@ function LanguageToggle() {
     if (lang !== user.language) void run((s) => setLanguage(s, user.id, lang));
   };
   return (
-    <div role="radiogroup" aria-label="Language / भाषा" className="flex rounded-control border border-line-strong bg-sunken p-0.5">
-      {(["en", "hi"] as const).map((lang) => (
+    <div role="radiogroup" aria-label="Language / भाषा / ਭਾਸ਼ਾ" className="flex rounded-control border border-line-strong bg-sunken p-0.5">
+      {(["en", "hi", "pa"] as const).map((lang) => (
         <button
           key={lang}
           type="button"
@@ -34,7 +34,7 @@ function LanguageToggle() {
             user.language === lang ? "bg-surface text-forest shadow-panel" : "text-ink",
           )}
         >
-          {lang === "en" ? "EN" : "हिंदी"}
+          {lang === "en" ? "EN" : LANGUAGE_NAME[lang]}
         </button>
       ))}
     </div>
@@ -170,7 +170,8 @@ export function FarmerShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-16 max-w-[30rem] items-center gap-2 px-4 lg:max-w-none lg:px-8">
           <Link href="/farmer" className="flex min-w-0 items-center gap-2 lg:gap-3" aria-label="Urvara: today">
             <Logo size={34} ground="light" />
-            {firstName && <span className="truncate font-semibold text-ink-strong lg:hidden">{firstName}</span>}
+            {/* Phones need the room for three language buttons; the home greeting already names the farmer. */}
+            {firstName && <span className="hidden truncate font-semibold text-ink-strong sm:inline lg:hidden">{firstName}</span>}
             <span className="hidden lg:inline-flex">
               <Wordmark />
             </span>
@@ -178,7 +179,7 @@ export function FarmerShell({ children }: { children: ReactNode }) {
           <span className="ml-2 hidden border-l border-line-strong pl-4 text-[0.9375rem] text-ink lg:block">{tx(lang, "farmerPortal")}</span>
           <div className="ml-auto flex items-center gap-1.5 lg:gap-3">
             <span className="lg:hidden">
-              <DataSourceBadge shortLabel={lang === "hi" ? { demo: "डेमो", live: "लाइव" } : { demo: "DEMO", live: "LIVE" }} />
+              <DataSourceBadge shortLabel={{ demo: pick(lang, "DEMO", "डेमो", "ਡੈਮੋ"), live: pick(lang, "LIVE", "लाइव", "ਲਾਈਵ") }} />
             </span>
             <span className="hidden lg:inline-flex">
               <DataSourceBadge />

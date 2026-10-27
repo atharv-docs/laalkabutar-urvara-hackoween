@@ -7,6 +7,7 @@ import { cropLabel } from "@/data/crops";
 import { detectConflicts } from "./resources";
 import { isOverdue, blocksOverlapping, weatherFor } from "./scheduler";
 import { latestRiskByField } from "./risk";
+import { pick } from "@/lib/i18n";
 
 export interface Alert {
   id: string;
@@ -52,10 +53,10 @@ export function farmerAlerts(state: UrvaraState, user: User): Alert[] {
   const out: Alert[] = [];
   const mine = state.tasks.filter((t) => t.assigneeId === user.id);
   for (const t of mine.filter((x) => x.changeNotice)) {
-    out.push({ id: `fa-chg-${t.id}`, level: "attention", kind: "task", title: user.language === "hi" && t.titleHi ? t.titleHi : t.title, detail: t.changeNotice!, href: `/farmer/tasks/${t.id}` });
+    out.push({ id: `fa-chg-${t.id}`, level: "attention", kind: "task", title: pick(user.language, t.title, t.titleHi, t.titlePa), detail: t.changeNotice!, href: `/farmer/tasks/${t.id}` });
   }
   for (const t of mine.filter((x) => isOverdue(x, state.now))) {
-    out.push({ id: `fa-od-${t.id}`, level: "attention", kind: "task", title: user.language === "hi" && t.titleHi ? t.titleHi : t.title, detail: "overdue", href: `/farmer/tasks/${t.id}` });
+    out.push({ id: `fa-od-${t.id}`, level: "attention", kind: "task", title: pick(user.language, t.title, t.titleHi, t.titlePa), detail: "overdue", href: `/farmer/tasks/${t.id}` });
   }
   const risk = latestRiskByField(state);
   for (const fieldId of user.fieldIds) {

@@ -25,7 +25,7 @@ Urvara AI is a voice-first, AI-assisted platform for agricultural operations and
 
 ## Positioning
 
-Autonomous multi-farm coordination, not a monitoring dashboard or a chatbot. Deterministic, explainable replanning across shared machines, people and weather, with owner approval, plus a voice-first farmer experience in Hindi and English.
+Autonomous multi-farm coordination, not a monitoring dashboard or a chatbot. Deterministic, explainable replanning across shared machines, people and weather, with owner approval, plus a voice-first farmer experience in Hindi, Punjabi and English.
 
 ## Capabilities and Constraints
 

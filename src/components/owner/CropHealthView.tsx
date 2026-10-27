@@ -142,7 +142,7 @@ export function CropHealthView() {
                   “{selected.transcript}”
                 </blockquote>
                 <p className="mt-1.5 text-xs text-ink-muted">
-                  {INPUT_MODE[selected.inputMode]} · {selected.language === "hi" ? "Hindi" : "English"} · observed {fmtDayTime(selected.observedAt)}
+                  {INPUT_MODE[selected.inputMode]} · {{ en: "English", hi: "Hindi", pa: "Punjabi" }[selected.language]} · observed {fmtDayTime(selected.observedAt)}
                 </p>
                 <p className="mt-3 flex items-start gap-2 rounded-control bg-gold-tint px-3 py-2 text-sm text-gold-ink">
                   <Info aria-hidden className="mt-0.5 size-4 shrink-0" />

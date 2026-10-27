@@ -47,7 +47,7 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 
    The board shows ghost (current) and gold (proposed) slots. Click *Approve plan*.
 3. **Machine breakdown (Journey C).** Click *Break the sprayer*. Boom sprayer S-1's bookings move to S-2 where it is free. The onion thrips spray can't be covered before its deadline, so it is flagged. Open that task and choose *Extend deadline 1 day and replan*.
-4. **Farmer voice report (Journey A).** Sign in as Ramesh, tap **बोलें / Speak**, and speak or tap the demo sample “टमाटर की पत्तियों पर पीले धब्बे हैं”. Correct anything and send. Back in **Owner → Crop Health**, the report is *unverified*, nearby fields are scored with reasons, and you can create a scouting task.
+4. **Farmer conversation and report (Journey A).** Sign in as Ramesh, tap **बोलें / Speak**, and talk to Urvara: speak, type, or tap a demo sample. Urvara replies aloud and the conversation continues. Say “टमाटर की पत्तियों पर पीले धब्बे हैं” and Urvara offers to send it to the owner; correct the details if needed and tap **मालिक को भेजें**. Back in **Owner → Crop Health**, the report is *unverified*, nearby fields are scored with reasons, and you can create a scouting task.
 5. **Rupee Score (Journey D).** Go to **Owner → Performance & Rupee Score**, choose Tomato · Kharif 2026 → Sunita Jadhav. The breakdown shows the records behind each component. Excuse a late task with a note: the score is recomputed and a new version with the reason is added to the history.
 6. **New farmer (Journey E).** Go to **Owner → Farmers → Add farmer**. Assign fields and copy the code, then sign in with it. The new farmer only sees their own fields. Assign them a task in Operations and complete it from the farmer side.
 7. **Reset.** *Settings & demo → Reset demo scenario* replays the story from the start.
@@ -62,7 +62,8 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 | Machine breakdown → reassignment / flags | Working (1 h travel buffer between farms) |
 | Task create/assign with live constraint checks | Working |
 | Farmer accounts: create, assign, deactivate, reissue code | Working (demo: salted SHA-256 only; live: Firebase Auth via `/api/farmers`) |
-| Farmer voice report | Working with **Sarvam AI speech-to-text** (`saaras:v3`, `hi-IN`/`en-IN`) when `SARVAM_API_KEY` is set; otherwise browser speech recognition (Chrome/Edge). Typed fallback and labelled demo samples everywhere |
+| Farmer voice report | Working with **Sarvam AI speech-to-text** (`saaras:v3`, `hi-IN`/`pa-IN`/`en-IN`) when `SARVAM_API_KEY` is set; otherwise browser speech recognition (Chrome/Edge). Typed fallback and labelled demo samples everywhere |
+| Spoken reply to the farmer | **Ollama Cloud** (`gemma4:31b`) writes a reply of at most 3 short sentences in Hindi, Punjabi or English, grounded in the farmer's own field, weather and task records; **Sarvam AI text-to-speech** (`bulbul:v3`) reads it aloud. Without `OLLAMA_API_KEY`, Sarvam's chat model (`sarvam-105b-conversations`) answers with the same Sarvam key; replies play automatically |
 | Intent extraction (English + Hindi) | Rule-based, with farmer confirmation before saving |
 | Farmer questions (“Should I irrigate today?”) | Answered from field data, with source and timestamp; unanswerable questions are forwarded to the owner |
 | Crop-risk scouting suggestions | Working, explainable rules; never a diagnosis |
@@ -80,7 +81,8 @@ Copy `.env.example` to `.env.local`.
 - **`NEXT_PUBLIC_FIREBASE_*`**: the Firebase web config. These values are safe in client code; access control comes from Auth and `firestore.rules`. Leave them empty to run in demo mode.
 - **`NEXT_PUBLIC_URVARA_DATA_MODE=demo`**: forces demo mode even when Firebase is configured.
 - **`FIREBASE_SERVICE_ACCOUNT_KEY`**: server-only service-account JSON, used by `/api/farmers` and the seed script. Never commit it.
-- **`SARVAM_API_KEY`**: server-only Sarvam AI key. The browser records a clip of up to 28 s and posts it to `/api/speech-to-text`, which adds the key and calls Sarvam. Leave it empty to use the browser's own speech recognition. `SARVAM_STT_MODEL` optionally overrides the model (default `saaras:v3`).
+- **`SARVAM_API_KEY`**: server-only Sarvam AI key. The browser records a clip of up to 28 s and posts it to `/api/speech-to-text`, which adds the key and calls Sarvam. Leave it empty to use the browser's own speech recognition. `SARVAM_STT_MODEL` optionally overrides the model (default `saaras:v3`). The same key powers `/api/tts` (`SARVAM_TTS_MODEL`, `SARVAM_TTS_SPEAKER` optional).
+- **`OLLAMA_API_KEY`**: server-only Ollama Cloud key (ollama.com/settings/keys). `/api/assistant` sends the farmer's confirmed words plus a short summary of their own records and returns the spoken reply. `OLLAMA_MODEL` optionally overrides the model (default `gemma4:31b`).
 
 ### Using Firebase
 

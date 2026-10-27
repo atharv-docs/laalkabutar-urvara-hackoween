@@ -47,8 +47,35 @@ export function hoursBetween(a: string, b: string): number {
 const dayFmt = new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, weekday: "short", day: "numeric", month: "short" });
 const timeFmt = new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true });
 const weekdayFmt = new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, weekday: "short" });
+type Lang = "en" | "hi" | "pa";
 const hiDayFmt = new Intl.DateTimeFormat("hi-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "short" });
 const hiTimeFmt = new Intl.DateTimeFormat("hi-IN", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true });
+
+/*
+ * Punjabi is spelled out by hand: many browsers ship without Punjabi date data
+ * (Chrome prints "M10 28, Wed"), and the server and browser must agree.
+ */
+const PA_WEEKDAY = ["ਐਤਵਾਰ", "ਸੋਮਵਾਰ", "ਮੰਗਲਵਾਰ", "ਬੁੱਧਵਾਰ", "ਵੀਰਵਾਰ", "ਸ਼ੁੱਕਰਵਾਰ", "ਸ਼ਨਿੱਚਰਵਾਰ"];
+const PA_MONTH = ["ਜਨਵਰੀ", "ਫ਼ਰਵਰੀ", "ਮਾਰਚ", "ਅਪ੍ਰੈਲ", "ਮਈ", "ਜੂਨ", "ਜੁਲਾਈ", "ਅਗਸਤ", "ਸਤੰਬਰ", "ਅਕਤੂਬਰ", "ਨਵੰਬਰ", "ਦਸੰਬਰ"];
+
+/** Calendar parts in IST (no daylight saving, so a fixed offset is exact). */
+function istParts(iso: string) {
+  const d = new Date(ms(iso) + 5.5 * 3_600_000);
+  return { weekday: d.getUTCDay(), day: d.getUTCDate(), month: d.getUTCMonth(), hour: d.getUTCHours(), minute: d.getUTCMinutes() };
+}
+
+/** Full month names: Gurmukhi has no settled short forms. */
+function paDay(iso: string): string {
+  const p = istParts(iso);
+  return `${PA_WEEKDAY[p.weekday]}, ${p.day} ${PA_MONTH[p.month]}`;
+}
+
+/** "ਸਵੇਰੇ 10:00", "ਦੁਪਹਿਰ 2:00", "ਸ਼ਾਮ 5:00", "ਰਾਤ 9:00". */
+function paTime(iso: string): string {
+  const { hour, minute } = istParts(iso);
+  const part = hour >= 5 && hour < 12 ? "ਸਵੇਰੇ" : hour >= 12 && hour < 16 ? "ਦੁਪਹਿਰ" : hour >= 16 && hour < 20 ? "ਸ਼ਾਮ" : "ਰਾਤ";
+  return `${part} ${hour % 12 || 12}:${String(minute).padStart(2, "0")}`;
+}
 
 export function fmtDay(iso: string): string {
   return dayFmt.format(new Date(iso));
@@ -71,19 +98,22 @@ export function fmtRange(start: string, end: string): string {
   return sameDay ? `${fmtDay(start)}, ${fmtTime(start)}–${fmtTime(end)}` : `${fmtDayTime(start)} – ${fmtDayTime(end)}`;
 }
 
-const longDateFmt = { en: new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }), hi: new Intl.DateTimeFormat("hi-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }) };
+const longDateFmt = {
+  en: new Intl.DateTimeFormat("en-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }),
+  hi: new Intl.DateTimeFormat("hi-IN", { timeZone: TIME_ZONE, weekday: "long", day: "numeric", month: "long" }),
+};
 
-/** "Wednesday, 28 October" / "बुधवार, 28 अक्टूबर". */
-export function fmtLongDateLocalised(iso: string, lang: "en" | "hi"): string {
-  return longDateFmt[lang].format(new Date(iso));
+/** "Wednesday, 28 October" / "बुधवार, 28 अक्टूबर" / "ਬੁੱਧਵਾਰ, 28 ਅਕਤੂਬਰ". */
+export function fmtLongDateLocalised(iso: string, lang: Lang): string {
+  return lang === "pa" ? paDay(iso) : longDateFmt[lang].format(new Date(iso));
 }
 
-export function fmtDayLocalised(iso: string, lang: "en" | "hi"): string {
-  return lang === "hi" ? hiDayFmt.format(new Date(iso)) : dayFmt.format(new Date(iso));
+export function fmtDayLocalised(iso: string, lang: Lang): string {
+  return lang === "pa" ? paDay(iso) : lang === "hi" ? hiDayFmt.format(new Date(iso)) : dayFmt.format(new Date(iso));
 }
 
-export function fmtTimeLocalised(iso: string, lang: "en" | "hi"): string {
-  return lang === "hi" ? hiTimeFmt.format(new Date(iso)) : fmtTime(iso);
+export function fmtTimeLocalised(iso: string, lang: Lang): string {
+  return lang === "pa" ? paTime(iso) : lang === "hi" ? hiTimeFmt.format(new Date(iso)) : fmtTime(iso);
 }
 
 /** "today", "tomorrow", or the weekday, relative to the demo clock. */

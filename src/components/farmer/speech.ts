@@ -47,7 +47,7 @@ export function speechRecognitionSupported(): boolean {
   return getCtor() !== null;
 }
 
-export const speechLocale = (lang: Language) => (lang === "hi" ? "hi-IN" : "en-IN");
+export const speechLocale = (lang: Language) => ({ en: "en-IN", hi: "hi-IN", pa: "pa-IN" })[lang];
 
 /**
  * Start listening. `onText` receives the running transcript (final + interim);
@@ -227,7 +227,7 @@ export function speak(text: string, lang: Language): boolean {
   const synth = window.speechSynthesis;
   const locale = speechLocale(lang);
   const voice = synth.getVoices().find((v) => v.lang === locale) ?? synth.getVoices().find((v) => v.lang.startsWith(lang));
-  if (lang === "hi" && !voice) return false;
+  if (lang !== "en" && !voice) return false;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = locale;
@@ -236,13 +236,101 @@ export function speak(text: string, lang: Language): boolean {
   return true;
 }
 
+let audioCtx: AudioContext | null = null;
+let source: AudioBufferSourceNode | null = null;
+let element: HTMLAudioElement | null = null;
+const clips = new Map<string, ArrayBuffer>();
+
+/**
+ * Call from a tap (mic, send, sample). Browsers only allow sound that starts
+ * close to a user gesture; a running AudioContext keeps that permission, so a
+ * reply that arrives seconds later can still play by itself.
+ */
+export function unlockAudio() {
+  try {
+    audioCtx ??= new AudioContext();
+    if (audioCtx.state === "suspended") void audioCtx.resume();
+    // iOS Safari also wants a sound started inside the gesture: one silent sample.
+    const blip = audioCtx.createBufferSource();
+    blip.buffer = audioCtx.createBuffer(1, 1, 22050);
+    blip.connect(audioCtx.destination);
+    blip.start();
+  } catch {
+    /* no Web Audio: playback falls back to an <audio> element below */
+  }
+}
+
+export function stopSpeaking() {
+  try {
+    source?.stop();
+  } catch {
+    /* already stopped */
+  }
+  source = null;
+  element?.pause();
+  element = null;
+  if (speechSynthesisSupported()) window.speechSynthesis.cancel();
+}
+
+async function fetchClip(text: string, lang: Language): Promise<ArrayBuffer | null> {
+  const cacheKey = `${lang}:${text}`;
+  const cached = clips.get(cacheKey);
+  if (cached) return cached;
+  try {
+    const res = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, language: lang }) });
+    if (!res.ok) return null;
+    const bytes = await res.arrayBuffer();
+    clips.set(cacheKey, bytes);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read a reply aloud with Sarvam AI's voice (/api/tts). Falls back to the
+ * browser's voice when the server has no key or the request fails. Resolves
+ * "blocked" only if the browser still refused to play without a tap.
+ */
+export async function speakAloud(text: string, lang: Language): Promise<"sarvam" | "browser" | "blocked" | "failed"> {
+  stopSpeaking();
+  const bytes = await fetchClip(text, lang);
+  if (bytes) {
+    if (audioCtx) {
+      try {
+        if (audioCtx.state === "suspended") await audioCtx.resume();
+        if (audioCtx.state === "running") {
+          const node = audioCtx.createBufferSource();
+          node.buffer = await audioCtx.decodeAudioData(bytes.slice(0));
+          node.connect(audioCtx.destination);
+          node.start();
+          source = node;
+          return "sarvam";
+        }
+      } catch {
+        /* decode or resume failed: try the <audio> element */
+      }
+    }
+    const audio = new Audio(URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" })));
+    element = audio;
+    try {
+      await audio.play();
+      return "sarvam";
+    } catch (err) {
+      return err instanceof DOMException && err.name === "NotAllowedError" ? "blocked" : "failed";
+    }
+  }
+  return speak(text, lang) ? "browser" : "failed";
+}
+
 const READ_ALOUD_KEY = "urvara:read-aloud";
 
+/** On unless the farmer turned it off in Settings. */
 export function getReadAloud(): boolean {
   try {
-    return window.localStorage.getItem(READ_ALOUD_KEY) === "1";
+    return window.localStorage.getItem(READ_ALOUD_KEY) !== "0";
   } catch {
-    return false;
+    return true;
   }
 }
 

@@ -39,11 +39,28 @@
 - **Decision:**
   - Sarvam AI speech-to-text (`saaras:v3`, `hi-IN` / `en-IN`) through a server route, `/api/speech-to-text`, so the key never reaches the browser. The page records a clip with `MediaRecorder` (auto-stop at 28 s; Sarvam's REST endpoint is for short clips).
   - Falls back to browser `SpeechRecognition` when the server has no key or the browser cannot record.
-  - Rule-based intent extraction in English and Hindi.
+  - Rule-based intent extraction in English, Hindi and Punjabi.
   - A mandatory review screen before anything is saved.
   - Input mode (`voice` / `typed` / `demo_sample`) is stored and shown.
 - **Trade-off:** Sarvam gives no live transcript while speaking (the browser engine does); the page shows a timer instead.
-- **Future scope:** Sarvam translation and text-to-speech.
+- **Future scope:** Sarvam translation.
+
+## Punjabi as a third Farmer Portal language
+- **Decision:** `Language` is `en | hi | pa`. Every Farmer Portal string, crop/stage/task label, seeded task title and score explanation has a Gurmukhi version, and the dictionaries are typed so a missing translation fails to compile. Voice uses Sarvam `pa-IN` for speech-to-text and text-to-speech; the reply model is told to answer in Gurmukhi.
+- **Dates:** Punjabi dates and times are spelled out by hand ("ਬੁੱਧਵਾਰ, 28 ਅਕਤੂਬਰ", "ਦੁਪਹਿਰ 2:00") because Chrome ships without Punjabi date data and the server and browser must agree.
+- **Type:** Mukta Mahee, Mukta's Gurmukhi sibling, follows Mukta in the font stack so Punjabi matches the rest of the UI.
+- **Owner Portal** stays English.
+
+## Conversation: Ollama explains, Sarvam speaks
+- **Decision:**
+  - The Speak tab is a conversation, not a one-shot form. Each farmer message (voice or typed) gets a spoken reply; the last 12 turns go to the model so follow-ups make sense.
+  - When a message reads as a crop problem, finished work, a need, or a question Urvara could not answer, the reply carries a "Send this to the owner?" card. Only that tap (after optional correction in the review form) saves a report.
+  - For each message the page builds a plain-text summary of *their* fields, soil readings, 48 h weather and upcoming tasks (`services/replyContext.ts`) and sends it with the conversation to `/api/assistant` (Ollama Cloud).
+  - The prompt caps the reply at 3 short sentences / 45 words in the farmer's language, forbids invented numbers, disease certainty and chemical doses, and treats Urvara's rule-based answer (when there is one) as the truth to rephrase.
+  - The reply is shown in the chat and, if the farmer sends a report, saved on it (`answerBy: "ai" | "rules"`), labelled "AI answer" on screen, and read aloud with Sarvam TTS (`/api/tts`), falling back to the browser voice.
+  - If Ollama is not configured or fails, Sarvam's chat model answers (same Sarvam key); only if both fail is the rule-based answer used.
+  - Replies play by themselves: the farmer's tap (mic, send, sample) unlocks a Web Audio context, which browsers then allow to play the reply when it arrives seconds later.
+- **Why:** an LLM explains naturally in Hindi; grounding it in the records and the rule-based answer keeps it honest.
 
 ## Rupee Score
 - **Decision:** a 0–100 index per farmer × crop × season, built from five weighted components: timeliness 30, yield 25, quality 15, health handling 15, efficiency 15.

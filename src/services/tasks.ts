@@ -1,7 +1,7 @@
 /**
  * Task lifecycle and creation with constraint validation.
  */
-import type { Priority, Task, TaskStatus, TaskType, UrvaraState } from "@/types";
+import type { Language, Priority, Task, TaskStatus, TaskType, UrvaraState } from "@/types";
 import { nextId } from "@/lib/ids";
 import { fmtRange, ms } from "@/lib/time";
 import { assigneeFree, machineFree, weatherFor, weatherViolation } from "./scheduler";
@@ -11,13 +11,13 @@ import { stockPosition } from "./resources";
 export const BLOCKER_REASONS = ["rain", "machine", "labour", "input", "health", "other"] as const;
 export type BlockerReason = (typeof BLOCKER_REASONS)[number];
 
-export const BLOCKER_LABEL: Record<BlockerReason, { en: string; hi: string }> = {
-  rain: { en: "Rain or bad weather", hi: "बारिश या खराब मौसम" },
-  machine: { en: "Machine did not arrive / broken", hi: "मशीन नहीं आई / खराब" },
-  labour: { en: "Not enough workers", hi: "मजदूर कम हैं" },
-  input: { en: "Seed, fertiliser or spray not available", hi: "बीज, खाद या दवा नहीं है" },
-  health: { en: "I am unwell", hi: "मेरी तबीयत ठीक नहीं" },
-  other: { en: "Something else", hi: "कुछ और" },
+export const BLOCKER_LABEL: Record<BlockerReason, Record<Language, string>> = {
+  rain: { en: "Rain or bad weather", hi: "बारिश या खराब मौसम", pa: "ਮੀਂਹ ਜਾਂ ਖ਼ਰਾਬ ਮੌਸਮ" },
+  machine: { en: "Machine did not arrive / broken", hi: "मशीन नहीं आई / खराब", pa: "ਮਸ਼ੀਨ ਨਹੀਂ ਆਈ / ਖ਼ਰਾਬ" },
+  labour: { en: "Not enough workers", hi: "मजदूर कम हैं", pa: "ਮਜ਼ਦੂਰ ਘੱਟ ਹਨ" },
+  input: { en: "Seed, fertiliser or spray not available", hi: "बीज, खाद या दवा नहीं है", pa: "ਬੀਜ, ਖਾਦ ਜਾਂ ਦਵਾਈ ਨਹੀਂ ਹੈ" },
+  health: { en: "I am unwell", hi: "मेरी तबीयत ठीक नहीं", pa: "ਮੇਰੀ ਤਬੀਅਤ ਠੀਕ ਨਹੀਂ" },
+  other: { en: "Something else", hi: "कुछ और", pa: "ਕੁਝ ਹੋਰ" },
 };
 
 export function updateTaskStatus(

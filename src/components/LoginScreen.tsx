@@ -46,8 +46,9 @@ function FieldEdge() {
 
 interface Copy {
   title: string;
-  /** Hindi line under the title; the Farmer Portal is bilingual. */
+  /** Hindi and Punjabi lines under the title; the Farmer Portal speaks both. */
   titleHi?: string;
+  titlePa?: string;
   hint: string;
   placeholder: string;
   idHint?: string;
@@ -62,6 +63,7 @@ const COPY: Record<Role, Copy> = {
   farmer: {
     title: "Sign in to your farm",
     titleHi: "अपने खेत में लॉगिन करें",
+    titlePa: "ਆਪਣੇ ਖੇਤ ਵਿੱਚ ਲੌਗਇਨ ਕਰੋ",
     hint: "Use the login ID and password from your farm owner. New farmers use their one-time code as the password.",
     placeholder: "URV-F-0001",
     idHint: "लॉगिन आईडी",
@@ -159,6 +161,7 @@ export function LoginScreen({ role }: { role: Role }) {
           <div className="w-full max-w-sm">
             <h2 className="text-[1.875rem] font-semibold leading-tight tracking-[-0.02em] text-ink-strong">{copy.title}</h2>
             {copy.titleHi && <p className="mt-1 text-lg text-sage-ink">{copy.titleHi}</p>}
+            {copy.titlePa && <p className="text-lg text-sage-ink">{copy.titlePa}</p>}
             <p className="mt-3 leading-relaxed text-ink">{copy.hint}</p>
 
             <form onSubmit={submit} className="mt-8 grid gap-5" noValidate>

@@ -21,6 +21,7 @@ export interface ReportDraft {
   taskType?: TaskType;
   language: Language;
   answer?: string;
+  answerBy?: "ai" | "rules";
   /** Task the farmer confirmed this completion report refers to. */
   completesTaskId?: string;
 }
@@ -60,6 +61,7 @@ export function submitReport(state: UrvaraState, draft: ReportDraft, reporterId:
     status: draft.kind === "problem" ? "unverified" : "reviewed",
     language: draft.language,
     answer: draft.answer,
+    answerBy: draft.answerBy,
   };
   let next: UrvaraState = { ...state, reports: [report, ...state.reports] };
   const kindLabel: Record<ReportKind, string> = {

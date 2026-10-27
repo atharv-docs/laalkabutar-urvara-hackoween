@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import type { Language, Task, TaskStatus, TaskType, UrvaraState } from "@/types";
 import { TASK_TYPE_LABEL, cropLabel } from "@/data/crops";
-import { tr } from "@/lib/i18n";
+import { pick, tr } from "@/lib/i18n";
 import { tx } from "@/lib/i18n-farmer-extra";
 import { fmtDayLocalised, fmtTimeLocalised, ms } from "@/lib/time";
 import { isOverdue } from "@/services/scheduler";
@@ -100,7 +100,7 @@ export function whenLabel(task: Task, lang: Language) {
 }
 
 export function taskTitle(task: Task, lang: Language): string {
-  return lang === "hi" && task.titleHi ? task.titleHi : task.title;
+  return pick(lang, task.title, task.titleHi, task.titlePa);
 }
 
 /** Due within two days and not finished: worth a nudge on the card. */

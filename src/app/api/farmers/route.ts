@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     status: "invited",
     farmIds,
     fieldIds,
-    language: body.language === "en" ? "en" : "hi",
+    language: body.language === "en" || body.language === "pa" ? body.language : "hi",
     village: body.village?.trim() ?? "",
     credentialIssuedAt: now,
     createdAt: now,

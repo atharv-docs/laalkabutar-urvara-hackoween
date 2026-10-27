@@ -27,7 +27,7 @@ import { TaskCard } from "@/components/farmer/shared";
 import { Button, EmptyState, cx } from "@/components/ui/primitives";
 import { Provenance } from "@/components/ui/domain";
 import { cropLabel } from "@/data/crops";
-import { tr } from "@/lib/i18n";
+import { pick, tr } from "@/lib/i18n";
 import { tx } from "@/lib/i18n-farmer-extra";
 import { fmtDayLocalised, fmtLongDateLocalised, istDate, ms } from "@/lib/time";
 import { farmerAlerts, type Alert } from "@/services/alerts";
@@ -81,7 +81,7 @@ export default function FarmerToday() {
             <Sprout aria-hidden className="size-7 text-sage-ink sm:size-8" />
           </h1>
           <p className="mt-1 text-ink">{fmtLongDateLocalised(state.now, lang)}</p>
-          <ul className="mt-3 flex flex-wrap gap-2" aria-label={lang === "hi" ? "काम का सार" : "Work summary"}>
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label={pick(lang, "Work summary", "काम का सार", "ਕੰਮ ਦਾ ਸਾਰ")}>
             <SummaryPill icon={ListChecks}>
               {inProgress} {tx(lang, "inProgressN")}
             </SummaryPill>
@@ -92,7 +92,7 @@ export default function FarmerToday() {
         </header>
 
         {alerts.length > 0 && (
-          <section aria-label={lang === "hi" ? "सूचनाएं" : "Alerts"}>
+          <section aria-label={pick(lang, "Alerts", "सूचनाएं", "ਸੂਚਨਾਵਾਂ")}>
             <ul className="space-y-2.5">
               {alerts.map((alert) => (
                 <AlertCard key={alert.id} alert={alert} lang={lang} onAck={(taskId) => void run((s) => acknowledgeChange(s, taskId), { success: tx(lang, "ackToast") })} />
@@ -133,7 +133,7 @@ export default function FarmerToday() {
         </section>
       </div>
 
-      <aside className="space-y-6 lg:pt-1" aria-label={lang === "hi" ? "मौसम और खेत" : "Weather and fields"}>
+      <aside className="space-y-6 lg:pt-1" aria-label={pick(lang, "Weather and fields", "मौसम और खेत", "ਮੌਸਮ ਅਤੇ ਖੇਤ")}>
         <WeatherCard state={state} user={user} lang={lang} />
         <FieldsCard state={state} user={user} lang={lang} />
         <QuickActions lang={lang} />
@@ -164,7 +164,7 @@ function TodayPanel({ lang, count, children }: { lang: Language; count: number; 
         </div>
         <p className="flex items-baseline gap-2 text-ink">
           <span className="tabular text-[1.875rem] font-semibold leading-none text-forest">{count}</span>
-          <span>{lang === "hi" ? "काम" : count === 1 ? "task" : "tasks"}</span>
+          <span>{pick(lang, count === 1 ? "task" : "tasks", "काम", "ਕੰਮ")}</span>
         </p>
       </div>
       {children}
@@ -240,13 +240,9 @@ function WeatherCard({ state, user, lang }: { state: UrvaraState; user: User; la
   const summary =
     hoursUntil === null
       ? tx(lang, "noRainToday")
-      : lang === "hi"
-        ? hoursUntil === 0
-          ? `अभी बारिश की ${wet!.rainProb}% संभावना`
-          : `${hoursUntil} घंटे में बारिश की ${wet!.rainProb}% संभावना`
-        : hoursUntil === 0
-          ? `${wet!.rainProb}% chance of rain now`
-          : `${wet!.rainProb}% chance of rain in ${hoursUntil} hours`;
+      : hoursUntil === 0
+        ? pick(lang, `${wet!.rainProb}% chance of rain now`, `अभी बारिश की ${wet!.rainProb}% संभावना`, `ਹੁਣ ਮੀਂਹ ਦੀ ${wet!.rainProb}% ਸੰਭਾਵਨਾ`)
+        : pick(lang, `${wet!.rainProb}% chance of rain in ${hoursUntil} hours`, `${hoursUntil} घंटे में बारिश की ${wet!.rainProb}% संभावना`, `${hoursUntil} ਘੰਟਿਆਂ ਵਿੱਚ ਮੀਂਹ ਦੀ ${wet!.rainProb}% ਸੰਭਾਵਨਾ`);
   const Icon = wet ? CloudRain : CloudSun;
   return (
     <Rail title={tx(lang, "weatherToday")} action={<Provenance source={w.source} at={w.issuedAt} now={state.now} />}>
@@ -308,7 +304,7 @@ function FieldsCard({ state, user, lang }: { state: UrvaraState; user: User; lan
                   <span className="block text-sm text-ink">{cropLabel(f.crop, lang)}</span>
                 </span>
                 <span className="tabular shrink-0 text-sm text-ink-muted">
-                  {n === 0 ? tx(lang, "noOpenWork") : lang === "hi" ? `${n} काम` : `${n} ${n === 1 ? "task" : "tasks"}`}
+                  {n === 0 ? tx(lang, "noOpenWork") : pick(lang, `${n} ${n === 1 ? "task" : "tasks"}`, `${n} काम`, `${n} ਕੰਮ`)}
                 </span>
                 <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-muted" />
               </Link>
@@ -348,7 +344,7 @@ function QuickActions({ lang }: { lang: Language }) {
   );
 }
 
-function AlertCard({ alert, lang, onAck }: { alert: Alert; lang: "en" | "hi"; onAck: (taskId: string) => void }) {
+function AlertCard({ alert, lang, onAck }: { alert: Alert; lang: Language; onAck: (taskId: string) => void }) {
   const isChange = alert.id.startsWith("fa-chg-");
   const isOverdueAlert = alert.id.startsWith("fa-od-");
   const taskId = alert.href.startsWith("/farmer/tasks/") ? alert.href.split("/").pop()! : "";

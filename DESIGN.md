@@ -218,7 +218,7 @@ An earthy, brief-fixed palette on a warm ivory ground, where brand hues signal s
 **Display Font:** Mukta (with ui-sans-serif, system-ui)
 **Body Font:** Mukta (same family)
 
-**Character:** One humanist sans with matched Devanagari, so English and Hindi sit on the same baseline and weight. Hierarchy comes from size steps and weight 600; there is no second face.
+**Character:** One humanist sans with matched Devanagari, so English and Hindi sit on the same baseline and weight; Punjabi uses Mukta Mahee, the same design drawn for Gurmukhi. Hierarchy comes from size steps and weight 600; there is no second face.
 
 ### Hierarchy
 - **Display** (600, 2.5rem; 1.75rem below 640px, 1.1, -0.02em): the tagline on the sign-in brand panel only.

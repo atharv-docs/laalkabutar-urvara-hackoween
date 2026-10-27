@@ -4,7 +4,7 @@ import { ClipboardList, Info, MessageCircleWarning } from "lucide-react";
 import { useReadyState } from "@/components/providers/UrvaraProvider";
 import { Chip, EmptyState, cx } from "@/components/ui/primitives";
 import { cropLabel } from "@/data/crops";
-import { tr } from "@/lib/i18n";
+import { pick, tr } from "@/lib/i18n";
 import { tx, type ExtraKey } from "@/lib/i18n-farmer-extra";
 import { fmtDayLocalised, ms } from "@/lib/time";
 import { latestScore, scoreComponents, scoreHistory } from "@/services/rupeeScore";
@@ -73,7 +73,7 @@ export default function FarmerRecord() {
                           />
                         )}
                       </div>
-                      <p className="mt-0.5 text-base text-ink">{lang === "hi" && c.detailHi ? c.detailHi : c.detail}</p>
+                      <p className="mt-0.5 text-base text-ink">{pick(lang, c.detail, c.detailHi, c.detailPa)}</p>
                     </li>
                   ))}
                 </ul>
@@ -86,7 +86,7 @@ export default function FarmerRecord() {
                         <li key={h.id} className="text-base">
                           <span className="tabular font-semibold text-ink-strong">{h.score ?? "—"}</span>
                           <span className="text-ink-muted"> · {fmtDayLocalised(h.at, lang)}</span>
-                          <p className="text-ink">{lang === "hi" && h.reasonHi ? h.reasonHi : h.reason}</p>
+                          <p className="text-ink">{pick(lang, h.reason, h.reasonHi, h.reasonPa)}</p>
                         </li>
                       ))}
                     </ol>
