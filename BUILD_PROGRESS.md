@@ -28,7 +28,7 @@ The brief's §9 says to build one step at a time. At the team's request, Steps 1
   - Score breakdown, corrections and audit.
 - [ ] **Step 8: Optional integrations and hardening.**
   - Live weather API adapter (Open-Meteo).
-  - Sarvam AI speech stubs and sensor adapters.
+  - Sarvam AI speech-to-text: done (`/api/speech-to-text`). Translation/TTS and sensor adapters remain.
   - Run against a real Firebase project.
   - Localise the strings that services generate.
 

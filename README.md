@@ -62,7 +62,7 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 | Machine breakdown → reassignment / flags | Working (1 h travel buffer between farms) |
 | Task create/assign with live constraint checks | Working |
 | Farmer accounts: create, assign, deactivate, reissue code | Working (demo: salted SHA-256 only; live: Firebase Auth via `/api/farmers`) |
-| Farmer voice report | Working with **browser speech recognition** (Chrome/Edge; `hi-IN`/`en-IN`); typed fallback and labelled demo samples everywhere |
+| Farmer voice report | Working with **Sarvam AI speech-to-text** (`saaras:v3`, `hi-IN`/`en-IN`) when `SARVAM_API_KEY` is set; otherwise browser speech recognition (Chrome/Edge). Typed fallback and labelled demo samples everywhere |
 | Intent extraction (English + Hindi) | Rule-based, with farmer confirmation before saving |
 | Farmer questions (“Should I irrigate today?”) | Answered from field data, with source and timestamp; unanswerable questions are forwarded to the owner |
 | Crop-risk scouting suggestions | Working, explainable rules; never a diagnosis |
@@ -71,7 +71,7 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 | Weather | **Seeded demo forecast** (and a seeded storm update). Live API adapter not built yet |
 | Firestore + Auth | Adapter, rules and seed script written; **not yet run against a live project** |
 | Scouting pins, scout sharing | Future scope, shown honestly on the Scouting page |
-| Sarvam AI speech/translation, physical sensors, image diagnosis | Future scope |
+| Sarvam AI translation, physical sensors, image diagnosis | Future scope |
 
 ## Environment variables
 
@@ -80,6 +80,7 @@ Copy `.env.example` to `.env.local`.
 - **`NEXT_PUBLIC_FIREBASE_*`**: the Firebase web config. These values are safe in client code; access control comes from Auth and `firestore.rules`. Leave them empty to run in demo mode.
 - **`NEXT_PUBLIC_URVARA_DATA_MODE=demo`**: forces demo mode even when Firebase is configured.
 - **`FIREBASE_SERVICE_ACCOUNT_KEY`**: server-only service-account JSON, used by `/api/farmers` and the seed script. Never commit it.
+- **`SARVAM_API_KEY`**: server-only Sarvam AI key. The browser records a clip of up to 28 s and posts it to `/api/speech-to-text`, which adds the key and calls Sarvam. Leave it empty to use the browser's own speech recognition. `SARVAM_STT_MODEL` optionally overrides the model (default `saaras:v3`).
 
 ### Using Firebase
 

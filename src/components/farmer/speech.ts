@@ -1,7 +1,7 @@
 /**
- * Browser speech adapter. Uses the Web Speech API when the browser has it and
- * reports honestly when it does not. A provider such as Sarvam AI can replace
- * this behind the same interface later.
+ * Speech adapter. Prefers Sarvam AI (recorded clip, transcribed on our server)
+ * when the server has a key, falls back to the browser's Web Speech API, and
+ * reports honestly when neither is available.
  */
 import type { Language } from "@/types";
 
@@ -106,6 +106,115 @@ export function startListening(
       rec.abort();
     },
   };
+}
+
+/** Which recogniser the Farmer Portal uses: Sarvam AI via our server, the browser's own, or none. */
+export type SpeechEngine = "sarvam" | "browser" | "none";
+
+/** Sarvam's REST endpoint is meant for short clips, so recording stops itself here. */
+export const MAX_CLIP_SECONDS = 28;
+
+function mediaRecorderSupported(): boolean {
+  return typeof window !== "undefined" && typeof window.MediaRecorder !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+}
+
+/** Prefer Sarvam when the server has a key and the browser can record; otherwise the browser recogniser. */
+export async function detectSpeechEngine(): Promise<SpeechEngine> {
+  const fallback: SpeechEngine = speechRecognitionSupported() ? "browser" : "none";
+  if (!mediaRecorderSupported()) return fallback;
+  try {
+    const res = await fetch("/api/speech-to-text", { cache: "no-store" });
+    const body = (await res.json()) as { available?: boolean };
+    return body.available ? "sarvam" : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Record a clip and transcribe it with Sarvam AI through /api/speech-to-text.
+ * There is no live transcript: `onTick` reports elapsed seconds while recording,
+ * `onProcessing` fires once the clip is being uploaded (also on the auto-stop).
+ */
+export function startCloudListening(
+  lang: Language,
+  handlers: {
+    onTick: (seconds: number) => void;
+    onProcessing: () => void;
+    onDone: (result: { text: string } | { error: SpeechErrorKind }) => void;
+  },
+): SpeechSession {
+  let recorder: MediaRecorder | null = null;
+  let stream: MediaStream | null = null;
+  let aborted = false;
+  let stopRequested = false;
+  let ticker: ReturnType<typeof setInterval> | undefined;
+  const chunks: Blob[] = [];
+
+  const release = () => {
+    clearInterval(ticker);
+    stream?.getTracks().forEach((t) => t.stop());
+  };
+  const stop = () => {
+    stopRequested = true;
+    if (recorder?.state === "recording") recorder.stop();
+  };
+
+  navigator.mediaDevices
+    .getUserMedia({ audio: true })
+    .then((s) => {
+      stream = s;
+      if (aborted) return release();
+      recorder = new MediaRecorder(s);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size) chunks.push(e.data);
+      };
+      recorder.onstop = () => {
+        release();
+        if (aborted) return;
+        handlers.onProcessing();
+        const type = recorder?.mimeType || "audio/webm";
+        void transcribe(new Blob(chunks, { type }), lang).then(handlers.onDone);
+      };
+      recorder.start();
+      const started = Date.now();
+      ticker = setInterval(() => {
+        const seconds = Math.floor((Date.now() - started) / 1000);
+        handlers.onTick(seconds);
+        if (seconds >= MAX_CLIP_SECONDS) stop();
+      }, 250);
+      if (stopRequested) stop();
+    })
+    .catch((err: unknown) => {
+      if (aborted) return;
+      const name = err instanceof DOMException ? err.name : "";
+      handlers.onDone({ error: name === "NotAllowedError" || name === "SecurityError" ? "denied" : "failed" });
+    });
+
+  return {
+    stop,
+    abort: () => {
+      aborted = true;
+      if (recorder?.state === "recording") recorder.stop();
+      release();
+    },
+  };
+}
+
+async function transcribe(clip: Blob, lang: Language): Promise<{ text: string } | { error: SpeechErrorKind }> {
+  if (clip.size === 0) return { error: "no-speech" };
+  const ext = clip.type.includes("mp4") ? "m4a" : clip.type.includes("ogg") ? "ogg" : "webm";
+  const form = new FormData();
+  form.append("file", clip, `speech.${ext}`);
+  form.append("language", speechLocale(lang));
+  try {
+    const res = await fetch("/api/speech-to-text", { method: "POST", body: form });
+    if (!res.ok) return { error: "failed" };
+    const body = (await res.json()) as { transcript?: string };
+    return body.transcript ? { text: body.transcript } : { error: "no-speech" };
+  } catch {
+    return { error: "failed" };
+  }
 }
 
 export function speechSynthesisSupported(): boolean {

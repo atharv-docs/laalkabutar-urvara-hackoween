@@ -35,6 +35,7 @@ const extra = {
   questionSaved: { en: "Your question is saved for the owner too.", hi: "आपका सवाल मालिक के लिए भी सहेजा गया है।" },
   forwarded: { en: "Sent to the owner", hi: "मालिक को भेजा गया" },
   speechNotSupportedListen: { en: "Reading aloud is not available in this browser.", hi: "इस ब्राउज़र में बोलकर सुनाना उपलब्ध नहीं है।" },
+  sarvamWorking: { en: "Writing down your words (Sarvam AI)…", hi: "आपकी बात लिख रहे हैं (Sarvam AI)…" },
   noSpeechHeard: { en: "No speech heard. Try again closer to the phone, or type.", hi: "कोई आवाज़ नहीं सुनी। फ़ोन के पास बोलें या लिखें।" },
   season: { en: "Season", hi: "मौसम" },
   outOf100: { en: "out of 100", hi: "100 में से" },

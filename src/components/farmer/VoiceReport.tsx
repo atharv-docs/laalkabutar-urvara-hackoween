@@ -36,7 +36,19 @@ import { parseUtterance } from "@/services/intent";
 import { answerQuestion, type AssistantAnswer } from "@/services/assistant";
 import { matchCompletionTask, submitReport } from "@/services/reports";
 import { TaskIcon, whenLabel } from "./shared";
-import { getReadAloud, speak, speechRecognitionSupported, speechSynthesisSupported, startListening, type SpeechErrorKind, type SpeechSession } from "./speech";
+import {
+  MAX_CLIP_SECONDS,
+  detectSpeechEngine,
+  getReadAloud,
+  speak,
+  speechRecognitionSupported,
+  speechSynthesisSupported,
+  startCloudListening,
+  startListening,
+  type SpeechEngine,
+  type SpeechErrorKind,
+  type SpeechSession,
+} from "./speech";
 
 type Phase = "ready" | "recording" | "processing" | "transcript" | "review" | "sent" | "answered";
 type InputMode = Report["inputMode"];
@@ -121,10 +133,19 @@ export function VoiceReport() {
   const [sentKind, setSentKind] = useState<ReportKind | null>(null);
   const [busy, setBusy] = useState(false);
   // Rendered only client-side (behind PortalGate), so feature detection can run in the initializer.
-  const [supported] = useState(speechRecognitionSupported);
+  const [engine, setEngine] = useState<SpeechEngine>(() => (speechRecognitionSupported() ? "browser" : "none"));
+  const [elapsed, setElapsed] = useState(0);
+  const supported = engine !== "none";
   const session = useRef<SpeechSession | null>(null);
 
-  useEffect(() => () => session.current?.abort(), []);
+  useEffect(() => {
+    let live = true;
+    void detectSpeechEngine().then((e) => live && setEngine(e));
+    return () => {
+      live = false;
+      session.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     if (phase === "transcript" || phase === "review" || phase === "recording" || phase === "ready") saveDraft(text, mode);
@@ -133,21 +154,23 @@ export function VoiceReport() {
   function beginRecording() {
     setError(null);
     setText("");
+    setElapsed(0);
     setPhase("recording");
-    session.current = startListening(lang, {
-      onText: (live) => setText(live),
-      onDone: (result) => {
-        session.current = null;
-        if ("text" in result) {
-          setText(result.text);
-          setMode("voice");
-          setPhase("transcript");
-        } else {
-          setError(result.error);
-          setPhase("ready");
-        }
-      },
-    });
+    const onDone = (result: { text: string } | { error: SpeechErrorKind }) => {
+      session.current = null;
+      if ("text" in result) {
+        setText(result.text);
+        setMode("voice");
+        setPhase("transcript");
+      } else {
+        setError(result.error);
+        setPhase("ready");
+      }
+    };
+    session.current =
+      engine === "sarvam"
+        ? startCloudListening(lang, { onTick: setElapsed, onProcessing: () => setPhase("processing"), onDone })
+        : startListening(lang, { onText: (live) => setText(live), onDone });
   }
 
   function stopRecording() {
@@ -265,6 +288,8 @@ export function VoiceReport() {
           phase={phase}
           lang={lang}
           supported={supported}
+          engine={engine}
+          elapsed={elapsed}
           error={error}
           liveText={text}
           onStart={beginRecording}
@@ -351,6 +376,8 @@ function Recorder({
   phase,
   lang,
   supported,
+  engine,
+  elapsed,
   error,
   liveText,
   onStart,
@@ -362,6 +389,8 @@ function Recorder({
   phase: Phase;
   lang: Language;
   supported: boolean;
+  engine: SpeechEngine;
+  elapsed: number;
   error: SpeechErrorKind | "empty" | null;
   liveText: string;
   onStart: () => void;
@@ -400,9 +429,15 @@ function Recorder({
             {!recording && !processing && <p className="mt-1 text-ink">{t("speakHint")}</p>}
             {(recording || processing) && (
               <>
-                <p className="mt-3 min-h-14 w-full rounded-control bg-sunken px-3 py-2 text-left text-lg text-ink-strong" aria-live="polite">
-                  {liveText || "…"}
-                </p>
+                {engine === "sarvam" ? (
+                  <p className="tabular mt-3 w-full rounded-control bg-sunken px-3 py-2 text-lg text-ink-strong">
+                    {processing ? tx(lang, "sarvamWorking") : `0:${String(elapsed).padStart(2, "0")} / 0:${MAX_CLIP_SECONDS}`}
+                  </p>
+                ) : (
+                  <p className="mt-3 min-h-14 w-full rounded-control bg-sunken px-3 py-2 text-left text-lg text-ink-strong" aria-live="polite">
+                    {liveText || "…"}
+                  </p>
+                )}
                 {recording && (
                   <div className="mt-4 grid w-full grid-cols-2 gap-2">
                     <Button size="lg" icon={Square} onClick={onStop}>

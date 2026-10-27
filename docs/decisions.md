@@ -35,13 +35,15 @@
 - **Decision:** a farmer's report is saved unscored. The owner session runs `assessUnscoredReports`, which is idempotent and stamps `riskAssessedAt`.
 - **Why:** scoring needs every farm, which a farmer is not allowed to read under the rules. The same path works in demo mode and live mode.
 
-## Voice: browser speech first, confirm always
+## Voice: Sarvam speech-to-text, browser fallback, confirm always
 - **Decision:**
-  - Browser `SpeechRecognition` (`hi-IN` / `en-IN`) with feature detection.
+  - Sarvam AI speech-to-text (`saaras:v3`, `hi-IN` / `en-IN`) through a server route, `/api/speech-to-text`, so the key never reaches the browser. The page records a clip with `MediaRecorder` (auto-stop at 28 s; Sarvam's REST endpoint is for short clips).
+  - Falls back to browser `SpeechRecognition` when the server has no key or the browser cannot record.
   - Rule-based intent extraction in English and Hindi.
   - A mandatory review screen before anything is saved.
   - Input mode (`voice` / `typed` / `demo_sample`) is stored and shown.
-- **Considered:** Sarvam AI for Indian-language speech and translation. Kept as future scope behind the same adapter shape.
+- **Trade-off:** Sarvam gives no live transcript while speaking (the browser engine does); the page shows a timer instead.
+- **Future scope:** Sarvam translation and text-to-speech.
 
 ## Rupee Score
 - **Decision:** a 0–100 index per farmer × crop × season, built from five weighted components: timeliness 30, yield 25, quality 15, health handling 15, efficiency 15.

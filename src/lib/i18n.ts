@@ -104,7 +104,7 @@ const dict = {
   speechOutput: { en: "Read answers aloud", hi: "जवाब बोलकर सुनाएं" },
   listen: { en: "Listen", hi: "सुनें" },
   demoSampleTag: { en: "Demo sample, not a recording", hi: "डेमो उदाहरण, रिकॉर्डिंग नहीं" },
-  voiceTag: { en: "From your voice (browser speech)", hi: "आपकी आवाज़ से (ब्राउज़र)" },
+  voiceTag: { en: "From your voice", hi: "आपकी आवाज़ से" },
   typedTag: { en: "Typed", hi: "लिखा हुआ" },
 } as const;
 
