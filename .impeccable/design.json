@@ -1,0 +1,533 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-27T18:19:05.089932+00:00",
+  "title": "Design System: Urvara AI",
+  "extensions": {
+    "colorMeta": {
+      "deep-forest": {
+        "role": "primary",
+        "displayName": "Deep Forest",
+        "canonical": "#234735",
+        "tonalRamp": [
+          "#193326",
+          "#2a5540",
+          "#3d7b5c",
+          "#51a47a",
+          "#76bc99",
+          "#9fd0b8",
+          "#c8e4d6",
+          "#eef7f2"
+        ]
+      },
+      "deep-forest-hover": {
+        "role": "primary",
+        "displayName": "Forest Hover",
+        "canonical": "#1b3a2b",
+        "tonalRamp": [
+          "#183427",
+          "#285741",
+          "#3a7d5d",
+          "#4ea77c",
+          "#74be9a",
+          "#9ed2b8",
+          "#c7e5d7",
+          "#eef7f2"
+        ]
+      },
+      "deep-forest-tint": {
+        "role": "primary",
+        "displayName": "Forest Tint",
+        "canonical": "#e2eae3",
+        "tonalRamp": [
+          "#202c22",
+          "#364a38",
+          "#4d6a51",
+          "#678e6c",
+          "#89a98d",
+          "#acc3af",
+          "#d0ddd1",
+          "#f0f4f1"
+        ]
+      },
+      "sage": {
+        "role": "secondary",
+        "displayName": "Sage",
+        "canonical": "#8faf8a",
+        "tonalRamp": [
+          "#212d1f",
+          "#374c34",
+          "#4f6d4b",
+          "#6a9163",
+          "#8bac86",
+          "#aec5aa",
+          "#d1decf",
+          "#f1f5f0"
+        ]
+      },
+      "sage-ink": {
+        "role": "secondary",
+        "displayName": "Sage Ink",
+        "canonical": "#44633e",
+        "tonalRamp": [
+          "#202f1d",
+          "#364e31",
+          "#4e7147",
+          "#67975e",
+          "#89b082",
+          "#adc8a7",
+          "#d0e0cd",
+          "#f0f5ef"
+        ]
+      },
+      "sage-tint": {
+        "role": "secondary",
+        "displayName": "Sage Tint",
+        "canonical": "#e5ece0",
+        "tonalRamp": [
+          "#252f1d",
+          "#3d4f30",
+          "#587246",
+          "#76985d",
+          "#95b181",
+          "#b5c9a6",
+          "#d5e0cc",
+          "#f2f5ef"
+        ]
+      },
+      "harvest-gold": {
+        "role": "tertiary",
+        "displayName": "Harvest Gold",
+        "canonical": "#d5a84b",
+        "tonalRamp": [
+          "#3e2f0e",
+          "#674e18",
+          "#957023",
+          "#c6952e",
+          "#d8af5a",
+          "#e4c78b",
+          "#f0dfbd",
+          "#faf5ea"
+        ]
+      },
+      "harvest-gold-ink": {
+        "role": "tertiary",
+        "displayName": "Gold Ink",
+        "canonical": "#74560f",
+        "tonalRamp": [
+          "#443209",
+          "#71540f",
+          "#a37915",
+          "#d9a11c",
+          "#e8b94a",
+          "#efce81",
+          "#f6e3b7",
+          "#fcf6e8"
+        ]
+      },
+      "harvest-gold-tint": {
+        "role": "tertiary",
+        "displayName": "Gold Tint",
+        "canonical": "#f4e8c9",
+        "tonalRamp": [
+          "#40310d",
+          "#6a5216",
+          "#99771f",
+          "#cb9e29",
+          "#dcb756",
+          "#e7cc88",
+          "#f1e2bb",
+          "#fbf6ea"
+        ]
+      },
+      "terracotta": {
+        "role": "tertiary",
+        "displayName": "Terracotta",
+        "canonical": "#b96f4e",
+        "tonalRamp": [
+          "#372016",
+          "#5b3524",
+          "#844d34",
+          "#af6645",
+          "#c5886d",
+          "#d7ac99",
+          "#e8cfc5",
+          "#f8f0ed"
+        ]
+      },
+      "terracotta-ink": {
+        "role": "tertiary",
+        "displayName": "Terracotta Ink",
+        "canonical": "#8c472b",
+        "tonalRamp": [
+          "#3b1e12",
+          "#62311e",
+          "#8c472b",
+          "#bb5f3a",
+          "#cf8263",
+          "#dda892",
+          "#eccdc1",
+          "#f9efeb"
+        ]
+      },
+      "terracotta-tint": {
+        "role": "tertiary",
+        "displayName": "Terracotta Tint",
+        "canonical": "#f4e1d7",
+        "tonalRamp": [
+          "#3c1f10",
+          "#64341b",
+          "#904c28",
+          "#c06535",
+          "#d3875f",
+          "#e0ab8f",
+          "#edcfbf",
+          "#faf0eb"
+        ]
+      },
+      "warm-ivory": {
+        "role": "neutral",
+        "displayName": "Warm Ivory",
+        "canonical": "#f6f3e9",
+        "tonalRamp": [
+          "#362f16",
+          "#5a4e25",
+          "#827135",
+          "#ae9647",
+          "#c4b06e",
+          "#d6c89a",
+          "#e7dfc5",
+          "#f8f5ed"
+        ]
+      },
+      "soil-brown": {
+        "role": "neutral",
+        "displayName": "Soil Brown",
+        "canonical": "#66513e",
+        "tonalRamp": [
+          "#30261d",
+          "#4f3f30",
+          "#725b45",
+          "#98795d",
+          "#b29880",
+          "#c9b7a6",
+          "#e0d6cc",
+          "#f5f2ef"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#fdfbf5",
+        "tonalRamp": [
+          "#40330d",
+          "#6a5515",
+          "#997a1f",
+          "#cca329",
+          "#ddbb55",
+          "#e7cf88",
+          "#f1e4bb",
+          "#fbf6ea"
+        ]
+      },
+      "sunken": {
+        "role": "neutral",
+        "displayName": "Sunken",
+        "canonical": "#eee9da",
+        "tonalRamp": [
+          "#342d18",
+          "#574c28",
+          "#7e6d3a",
+          "#a8914d",
+          "#bfac73",
+          "#d2c59d",
+          "#e5dec7",
+          "#f7f5ee"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "#ddd4c1",
+        "tonalRamp": [
+          "#312a1b",
+          "#52462d",
+          "#776541",
+          "#9e8757",
+          "#b7a47b",
+          "#ccbfa3",
+          "#e2daca",
+          "#f6f4ef"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Line Strong",
+        "canonical": "#c9bda5",
+        "tonalRamp": [
+          "#30291d",
+          "#504530",
+          "#736345",
+          "#99855c",
+          "#b2a280",
+          "#c9bea6",
+          "#e0dacc",
+          "#f5f3ef"
+        ]
+      },
+      "ink-strong": {
+        "role": "neutral",
+        "displayName": "Ink Strong",
+        "canonical": "#3a2e22",
+        "tonalRamp": [
+          "#30261c",
+          "#50402f",
+          "#745c44",
+          "#9a7a5a",
+          "#b4997e",
+          "#cab8a5",
+          "#e1d6cc",
+          "#f6f2ef"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "#7a6754",
+        "tonalRamp": [
+          "#2d261f",
+          "#4c4034",
+          "#6d5c4b",
+          "#917a64",
+          "#ac9986",
+          "#c5b8aa",
+          "#ded6cf",
+          "#f5f2f0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Sign-in tagline only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Owner page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel headers and board machine names."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Owner Portal base text."
+      },
+      "body-farmer": {
+        "displayName": "Body (Farmer)",
+        "purpose": "Farmer Portal base text, set on the shell."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, segmented options, sidebar group names."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Chips, provenance, board slots, rain cells, legends."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel",
+        "value": "0 1px 2px rgba(58, 46, 34, 0.06), 0 2px 8px rgba(58, 46, 34, 0.04)",
+        "purpose": "Panels, account cards, selected segment."
+      },
+      {
+        "name": "raised",
+        "value": "0 6px 24px rgba(35, 71, 53, 0.14), 0 2px 6px rgba(58, 46, 34, 0.08)",
+        "purpose": "Drawer, farmer mic and speak card, hovered board slots."
+      }
+    ],
+    "motion": [
+      {
+        "name": "colors-150",
+        "value": "150ms ease (transition-colors)",
+        "purpose": "Button, nav and input state changes."
+      },
+      {
+        "name": "rise",
+        "value": "220ms cubic-bezier(0.16, 1, 0.3, 1); translateY(6px) and opacity 0.4 to rest",
+        "purpose": "Mobile drawer and newly surfaced content entering."
+      },
+      {
+        "name": "record-pulse",
+        "value": "1.6s ease-out infinite; terracotta ring 0 to 22px at 45% to 0 alpha",
+        "purpose": "Active voice recording only."
+      },
+      {
+        "name": "shimmer",
+        "value": "1.4s linear infinite",
+        "purpose": "Skeleton loading."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "durations collapse to 0.001ms",
+        "purpose": "All motion respects prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "farmer-column",
+        "value": "480px (30rem max width)"
+      },
+      {
+        "name": "owner-column",
+        "value": "1360px max width"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default action in both portals.",
+      "html": "<button class=\"ds-btn-primary\">Approve plan</button>",
+      "css": ".ds-btn-primary { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:6px; font-size:15px; font-weight:600; border:1px solid transparent; cursor:pointer; transition: background-color 150ms, border-color 150ms; background:#234735; color:#f6f3e9; } .ds-btn-primary:hover { background:#1b3a2b; } .ds-btn-primary:focus-visible { outline:2px solid #234735; outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Neutral action beside a primary.",
+      "html": "<button class=\"ds-btn-secondary\">Reject</button>",
+      "css": ".ds-btn-secondary { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:6px; font-size:15px; font-weight:600; border:1px solid transparent; cursor:pointer; transition: background-color 150ms, border-color 150ms; background:#fdfbf5; color:#3a2e22; border-color:#c9bda5; } .ds-btn-secondary:hover { border-color:rgba(35,71,53,0.5); background:rgba(226,234,227,0.6); } .ds-btn-secondary:focus-visible { outline:2px solid #234735; outline-offset:2px; }"
+    },
+    {
+      "name": "Gold Button",
+      "kind": "button",
+      "refersTo": "button-gold",
+      "description": "Decisions on proposals.",
+      "html": "<button class=\"ds-btn-gold\">Approve replan</button>",
+      "css": ".ds-btn-gold { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px; border-radius:6px; font-size:15px; font-weight:600; border:1px solid transparent; cursor:pointer; transition: background-color 150ms, border-color 150ms; background:#d5a84b; color:#3a2e22; } .ds-btn-gold:hover { background:#c99b3d; } .ds-btn-gold:focus-visible { outline:2px solid #234735; outline-offset:2px; }"
+    },
+    {
+      "name": "Status Chips",
+      "kind": "chip",
+      "refersTo": "chip-forest",
+      "description": "Tint fill, ink text, word plus icon; five tones.",
+      "html": "<span class=\"ds-chip ds-chip-forest\">Scheduled</span> <span class=\"ds-chip ds-chip-gold\">In progress</span> <span class=\"ds-chip ds-chip-sage\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/></svg>Done</span> <span class=\"ds-chip ds-chip-terra\">Blocked</span> <span class=\"ds-chip ds-chip-neutral\">Suggested</span>",
+      "css": ".ds-chip { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; display:inline-flex; align-items:center; gap:4px; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:600; line-height:16px; white-space:nowrap; } .ds-chip-forest { background:#e2eae3; color:#234735; } .ds-chip-gold { background:#f4e8c9; color:#74560f; } .ds-chip-sage { background:#e5ece0; color:#44633e; } .ds-chip-terra { background:#f4e1d7; color:#8c472b; } .ds-chip-neutral { background:#eee9da; color:#66513e; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Shared field for both portals.",
+      "html": "<input class=\"ds-input\" placeholder=\"Login ID\" />",
+      "css": ".ds-input { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; width:260px; height:40px; padding:0 12px; border:1px solid #c9bda5; border-radius:6px; background:#fdfbf5; color:#3a2e22; font-size:15px; transition:border-color 150ms; } .ds-input::placeholder { color:rgba(122,103,84,0.8); } .ds-input:hover { border-color:rgba(35,71,53,0.4); } .ds-input:focus { border-color:#234735; outline:2px solid #234735; outline-offset:0; }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The standard container.",
+      "html": "<section class=\"ds-panel\"><header class=\"ds-panel-head\"><h2>Pending approvals</h2><p>Rain moved two sprays at Sahyadri.</p></header><div class=\"ds-panel-body\">Body content</div></section>",
+      "css": ".ds-panel { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; width:340px; background:#fdfbf5; border:1px solid #ddd4c1; border-radius:10px; box-shadow:0 1px 2px rgba(58,46,34,0.06), 0 2px 8px rgba(58,46,34,0.04); color:#66513e; font-size:15px; } .ds-panel-head { padding:12px 16px; border-bottom:1px solid #ddd4c1; } .ds-panel-head h2 { margin:0; font-size:16px; font-weight:600; color:#3a2e22; } .ds-panel-head p { margin:2px 0 0; font-size:14px; color:#7a6754; } .ds-panel-body { padding:16px; }"
+    },
+    {
+      "name": "Owner Sidebar Nav",
+      "kind": "nav",
+      "refersTo": "owner-sidebar",
+      "description": "Forest sidebar with ivory active pill and gold counts.",
+      "html": "<nav class=\"ds-side\"><p class=\"ds-side-group\">Coordinate</p><a class=\"ds-side-item ds-active\" href=\"#\">Operations &amp; Tasks <span class=\"ds-count\">2</span></a><a class=\"ds-side-item\" href=\"#\">Farmers</a><a class=\"ds-side-item\" href=\"#\">Resources</a></nav>",
+      "css": ".ds-side { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; width:232px; padding:12px; background:#234735; border-radius:10px; } .ds-side-group { margin:0; padding:0 8px 6px; font-size:12px; font-weight:600; color:#8faf8a; } .ds-side-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:6px; font-size:15px; color:rgba(246,243,233,0.85); text-decoration:none; transition:background-color 150ms; } .ds-side-item:hover { background:rgba(255,255,255,0.08); color:#f6f3e9; } .ds-side-item:focus-visible { outline:2px solid #f6f3e9; outline-offset:2px; } .ds-active { background:#f6f3e9; color:#234735; font-weight:600; } .ds-active:hover { background:#f6f3e9; color:#234735; } .ds-count { margin-left:auto; padding:0 6px; border-radius:4px; font-size:12px; font-weight:700; background:#f4e8c9; color:#74560f; }"
+    },
+    {
+      "name": "Farmer Bottom Nav",
+      "kind": "nav",
+      "refersTo": "farmer-mic-button",
+      "description": "Four slots with a raised forest mic at the centre.",
+      "html": "<nav class=\"ds-bnav\"><a class=\"ds-bnav-item ds-on\" href=\"#\">Today</a><a class=\"ds-bnav-item\" href=\"#\">Fields</a><a class=\"ds-bnav-mic\" href=\"#\"><span><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\"/></svg></span>Report</a><a class=\"ds-bnav-item\" href=\"#\">Record</a></nav>",
+      "css": ".ds-bnav { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; display:grid; grid-template-columns:repeat(4,1fr); width:360px; margin-top:28px; background:#fdfbf5; border-top:1px solid #ddd4c1; } .ds-bnav-item { display:flex; min-height:64px; align-items:center; justify-content:center; font-size:14px; color:#66513e; text-decoration:none; } .ds-on { color:#234735; font-weight:600; } .ds-bnav-mic { display:flex; flex-direction:column; align-items:center; gap:2px; margin-top:-20px; padding-bottom:6px; font-size:14px; font-weight:600; color:#234735; text-decoration:none; } .ds-bnav-mic span { display:grid; place-items:center; width:56px; height:56px; border-radius:9999px; background:#234735; color:#f6f3e9; box-shadow:0 0 0 4px #f6f3e9, 0 6px 24px rgba(35,71,53,0.14), 0 2px 6px rgba(58,46,34,0.08); transition:background-color 150ms; } .ds-bnav-mic:hover span { background:#1b3a2b; } .ds-bnav-mic:focus-visible { outline:2px solid #234735; outline-offset:2px; }"
+    },
+    {
+      "name": "Schedule Board Lane (proposal mode)",
+      "kind": "custom",
+      "refersTo": "board-slot-proposed",
+      "description": "Rain band over a machine lane: ghost current slot, gold proposed slot, gold now-line.",
+      "html": "<div class=\"ds-board\"><div class=\"ds-rain\"><span class=\"ds-r1\">10%</span><span class=\"ds-r2\">45%</span><span class=\"ds-r3\">70% · 12 mm</span><span class=\"ds-r1\">20%</span></div><div class=\"ds-lane\"><span class=\"ds-now\"></span><a class=\"ds-slot ds-ghost\" href=\"#\">Spray<small>SAH F1</small></a><a class=\"ds-slot ds-moved\" href=\"#\">Spray<small>SAH F1</small></a></div></div>",
+      "css": ".ds-board { font-family: Mukta, ui-sans-serif, system-ui, sans-serif; width:420px; font-size:12px; color:#66513e; } .ds-rain { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid rgba(221,212,193,0.7); } .ds-rain span { padding:4px 6px; font-variant-numeric:tabular-nums; border-left:1px solid rgba(221,212,193,0.5); } .ds-r1 { background:rgba(229,236,224,0.3); color:#7a6754; } .ds-r2 { background:#f4e8c9; color:#74560f; } .ds-r3 { background:#f4e1d7; color:#8c472b; font-weight:600; } .ds-lane { position:relative; height:56px; border-bottom:1px solid #ddd4c1; } .ds-now { position:absolute; top:0; bottom:0; left:30%; width:2px; background:#d5a84b; } .ds-slot { position:absolute; top:8px; bottom:8px; display:flex; flex-direction:column; justify-content:center; padding:0 6px; border:1px solid; border-radius:5px; font-weight:600; line-height:1.2; text-decoration:none; transition:box-shadow 150ms; } .ds-slot small { font-weight:400; font-variant-numeric:tabular-nums; opacity:0.85; } .ds-slot:hover { box-shadow:0 6px 24px rgba(35,71,53,0.14), 0 2px 6px rgba(58,46,34,0.08); } .ds-slot:focus-visible { outline:2px solid #234735; outline-offset:2px; } .ds-ghost { left:52%; width:58px; border-style:dashed; border-color:rgba(122,103,84,0.7); color:#7a6754; background:transparent; } .ds-moved { left:78%; width:58px; border-color:#74560f; background:#f4e8c9; color:#3a2e22; box-shadow:0 0 0 2px rgba(213,168,75,0.5); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Ledger",
+    "overview": "Urvara is a working ledger for land that is shared between farms: a warm ivory page, soil-brown ink, and a deep forest frame that holds the navigation. Its job is to make coordination legible: what changed, why, and what needs the owner's yes. Colour is spent on state, not decoration; a screen at rest is mostly ivory, brown ink and thin tan lines, and the brand hues appear when something is scheduled, in progress, proposed or at risk.\n\nTwo portals share one control vocabulary. The Owner Portal is a dense desktop tool with a forest sidebar and a 1360px working column. The Farmer Portal is a single 30rem phone column with larger type (17px body), 44px+ targets, a bottom nav and a raised forest microphone at its centre, because voice is the primary input. Mukta sets Latin and Devanagari on one design, so Hindi is never a fallback face.\n\nBrand expression is concentrated in a few owned places: the sprout-and-furrow mark cut from the team's logo, the forest brand panel on sign-in with its faint ivory furrow lines, and the shared-machine schedule board, where rain bands sit above machine lanes and proposals draw ghost and gold slots.",
+    "keyCharacteristics": [
+      "Six fixed brand hues, each with an -ink shade for small text and a -tint for fills.",
+      "Flat, ivory-on-ivory surfaces separated by 1px tan lines and a barely-there panel shadow.",
+      "One sans family (Mukta, 400 to 700) carrying both scripts; weight 600 does the hierarchy work.",
+      "Status is always text plus icon plus tone, never colour alone.",
+      "Sources are always labelled: a persistent Demo/Live data badge and per-reading provenance chips."
+    ],
+    "rules": [
+      {
+        "name": "The Ink-and-Tint Rule",
+        "body": "Small text in a brand hue always uses that hue's -ink shade, and coloured fills always use its -tint. Raw Sage and Gold text appear only on Deep Forest. If a new state needs colour, it takes a tint fill plus ink text from one of the four families.",
+        "section": "colors"
+      },
+      {
+        "name": "The State-Spends-Colour Rule",
+        "body": "Brand hues mark state (scheduled, in progress, done, proposed, at risk, demo). A screen with nothing happening is ivory, brown and line.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Means Proposed Rule",
+        "body": "Gold is the colour of \"pending your decision\": proposed board slots, approval counts, in-progress work, demo data. It is never used as a decorative highlight.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Every number that can change (clock, counts, KPIs, rain %, farm codes) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Mukta carries both scripts at weights 400/500/600/700. Never add a display face that lacks Devanagari.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Shadows Rule",
+        "body": "Only Panel and Raised exist. Shadows are soft, warm-brown or forest-tinted, and never offset hard.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** take state colour from the four tint/ink pairs (forest, sage, gold, terracotta) and pair it with a word and an icon.",
+      "**Do** keep the Owner body at 15px and the Farmer body at 17px with targets of at least 44px.",
+      "**Do** use Mukta for every string, Hindi included, with weight 600 for emphasis.",
+      "**Do** show the data source and reading age wherever data appears; demo data is always labelled.",
+      "**Do** draw a change as before (dashed ghost) and after (gold) side by side, as the schedule board does.",
+      "**Do** use tokens instead of raw hex in charts and SVG, so the palette has one source of truth."
+    ],
+    "donts": [
+      "**Don't** set small text in raw Sage (#8faf8a) or Harvest Gold (#d5a84b) on ivory; use the -ink shade.",
+      "**Don't** add new brand hues or recolour the six source colours; they are fixed by the brief.",
+      "**Don't** add shadows beyond Panel and Raised, or use hard offset shadows.",
+      "**Don't** use colour as the only signal for status, risk or proposals.",
+      "**Don't** truncate task words on the board; use the short verb list.",
+      "**Don't** introduce a second typeface or a display face without Devanagari."
+    ]
+  }
+}

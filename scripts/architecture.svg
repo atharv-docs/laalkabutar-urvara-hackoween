@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" font-family="Mukta, 'Segoe UI', sans-serif">
+  <rect width="1200" height="720" fill="#f6f3e9"/>
+  <text x="40" y="54" font-size="30" font-weight="700" fill="#234735">Urvara AI · architecture</text>
+  <text x="40" y="84" font-size="17" fill="#66513e">Two portals share one set of domain services; data access goes through one repository interface.</text>
+  <g font-size="17">
+    <rect x="40" y="120" width="520" height="130" rx="10" fill="#234735"/>
+    <text x="64" y="158" font-size="22" font-weight="700" fill="#f6f3e9">Owner Portal  /owner</text>
+    <text x="64" y="188" fill="#e5ece0">Overview · Farms &amp; Fields · Crop Health · Weather &amp; Sensors</text>
+    <text x="64" y="212" fill="#e5ece0">Performance &amp; Rupee Score · Operations · Farmers · Resources</text>
+    <text x="64" y="236" fill="#d5a84b">Approves replans, manages people and machines</text>
+    <rect x="640" y="120" width="520" height="130" rx="10" fill="#fdfbf5" stroke="#234735" stroke-width="2"/>
+    <text x="664" y="158" font-size="22" font-weight="700" fill="#234735">Farmer Portal  /farmer</text>
+    <text x="664" y="188" fill="#66513e">Mobile-first, Hindi + English, voice-first</text>
+    <text x="664" y="212" fill="#66513e">Today · Speak (browser speech → intent → confirm)</text>
+    <text x="664" y="236" fill="#66513e">My fields · My record · own tasks only</text>
+    <path d="M300 250 V296" stroke="#66513e" stroke-width="2" marker-end="url(#a)"/><path d="M900 250 V296" stroke="#66513e" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="40" y="300" width="1120" height="200" rx="10" fill="#fdfbf5" stroke="#c9bda5" stroke-width="2"/>
+    <text x="64" y="336" font-size="20" font-weight="700" fill="#234735">Domain services  src/services  (pure, deterministic, unit-tested)</text>
+    <g fill="#e2eae3"><rect x="64" y="356" width="250" height="56" rx="6"/><rect x="330" y="356" width="250" height="56" rx="6"/><rect x="596" y="356" width="250" height="56" rx="6"/><rect x="862" y="356" width="274" height="56" rx="6"/><rect x="64" y="424" width="250" height="56" rx="6"/><rect x="330" y="424" width="250" height="56" rx="6"/><rect x="596" y="424" width="250" height="56" rx="6"/><rect x="862" y="424" width="274" height="56" rx="6"/></g>
+    <g fill="#234735" font-weight="600">
+      <text x="80" y="390">Intent + assistant (voice)</text><text x="346" y="390">Scheduler (constraints)</text><text x="612" y="390">Replanner + approvals</text><text x="878" y="390">Resource coordinator</text>
+      <text x="80" y="458">Crop-risk (scouting)</text><text x="346" y="458">Rupee Score + corrections</text><text x="612" y="458">Soil + weather insights</text><text x="878" y="458">Alerts · audit · analytics</text>
+    </g>
+    <path d="M600 500 V550" stroke="#66513e" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="300" y="550" width="600" height="56" rx="8" fill="#f4e8c9"/>
+    <text x="324" y="584" font-weight="700" fill="#3a2e22">DataRepository  src/repositories  · shows DEMO DATA / LIVE DATA</text>
+    <path d="M440 606 L284 638" stroke="#66513e" stroke-width="2" marker-end="url(#a)"/><path d="M760 606 L916 638" stroke="#66513e" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="40" y="640" width="500" height="64" rx="8" fill="#fdfbf5" stroke="#d5a84b" stroke-width="2"/>
+    <text x="64" y="668" font-weight="700" fill="#74560f">LocalDemoRepository (no credentials)</text>
+    <text x="64" y="692" fill="#66513e">Deterministic synthetic seed in localStorage, synced across tabs</text>
+    <rect x="660" y="640" width="500" height="64" rx="8" fill="#fdfbf5" stroke="#8faf8a" stroke-width="2"/>
+    <text x="684" y="668" font-weight="700" fill="#44633e">FirestoreRepository + Firebase Auth</text>
+    <text x="684" y="692" fill="#66513e">Role claims via Admin SDK · firestore.rules scope farmers</text>
+  </g>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#66513e"/></marker></defs>
+</svg>

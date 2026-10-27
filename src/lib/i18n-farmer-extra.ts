@@ -1,0 +1,72 @@
+/**
+ * Extra Farmer Portal strings (kept apart from the shared i18n dictionary).
+ */
+import type { Language } from "@/types";
+
+const extra = {
+  startedToast: { en: "Work started", hi: "काम शुरू हुआ" },
+  doneToast: { en: "Marked as done. The owner can see it.", hi: "पूरा दर्ज हुआ। मालिक देख सकते हैं।" },
+  blockedToast: { en: "Owner told about the problem", hi: "मालिक को रुकावट बताई गई" },
+  ackToast: { en: "Noted", hi: "दर्ज किया" },
+  taskNotFound: { en: "This work is not in your list", hi: "यह काम आपकी सूची में नहीं है" },
+  taskNotFoundBody: { en: "It may have been moved to someone else. Go back to today's work.", hi: "शायद यह किसी और को दिया गया है। आज के काम पर वापस जाएं।" },
+  history: { en: "What happened so far", hi: "अब तक क्या हुआ" },
+  noMachine: { en: "No machine needed", hi: "मशीन की ज़रूरत नहीं" },
+  noMaterials: { en: "No materials needed", hi: "सामग्री की ज़रूरत नहीं" },
+  sendBlocker: { en: "Tell the owner", hi: "मालिक को बताएं" },
+  chooseReason: { en: "Choose one reason", hi: "एक कारण चुनें" },
+  doneNoteTitle: { en: "Anything to add? (optional)", hi: "कुछ और बताना है? (ज़रूरी नहीं)" },
+  confirmDone: { en: "Yes, work is done", hi: "हाँ, काम पूरा हुआ" },
+  alreadyDone: { en: "This work is done", hi: "यह काम पूरा हो गया है" },
+  blockedNow: { en: "You reported a problem", hi: "आपने रुकावट बताई है" },
+  moreLater: { en: "No work in the coming days yet.", hi: "आने वाले दिनों में अभी कोई काम नहीं।" },
+  rainOn: { en: "on", hi: "को" },
+  rainBody: { en: "Spraying and fertiliser work may be moved. Urvara will tell you.", hi: "छिड़काव और खाद का काम आगे-पीछे हो सकता है। Urvara आपको बताएगा।" },
+  overdueBody: { en: "Finish it or tell the owner what is stopping you.", hi: "इसे पूरा करें या मालिक को रुकावट बताएं।" },
+  open: { en: "Open", hi: "खोलें" },
+  kind: { en: "Type of report", hi: "रिपोर्ट का प्रकार" },
+  symptomPlaceholder: { en: "e.g. yellow spots on leaves", hi: "जैसे पत्तियों पर पीले धब्बे" },
+  resourcePlaceholder: { en: "e.g. sprayer, urea, workers", hi: "जैसे स्प्रेयर, यूरिया, मजदूर" },
+  next: { en: "Next", hi: "आगे" },
+  editAgain: { en: "Change the words", hi: "शब्द बदलें" },
+  textEmpty: { en: "Please say or type something first.", hi: "पहले कुछ बोलें या लिखें।" },
+  chooseField: { en: "Choose your field", hi: "अपना खेत चुनें" },
+  noFieldsAssigned: { en: "No fields are assigned to you yet. Ask the owner.", hi: "आपको अभी कोई खेत नहीं दिया गया है। मालिक से पूछें।" },
+  questionSaved: { en: "Your question is saved for the owner too.", hi: "आपका सवाल मालिक के लिए भी सहेजा गया है।" },
+  forwarded: { en: "Sent to the owner", hi: "मालिक को भेजा गया" },
+  speechNotSupportedListen: { en: "Reading aloud is not available in this browser.", hi: "इस ब्राउज़र में बोलकर सुनाना उपलब्ध नहीं है।" },
+  noSpeechHeard: { en: "No speech heard. Try again closer to the phone, or type.", hi: "कोई आवाज़ नहीं सुनी। फ़ोन के पास बोलें या लिखें।" },
+  season: { en: "Season", hi: "मौसम" },
+  outOf100: { en: "out of 100", hi: "100 में से" },
+  history2: { en: "How it changed", hi: "कैसे बदला" },
+  noRecords: { en: "No crop records yet", hi: "अभी कोई फसल रिकॉर्ड नहीं" },
+  noRecordsBody: { en: "Your record starts after your first season with Urvara.", hi: "Urvara के साथ पहले मौसम के बाद आपका रिकॉर्ड शुरू होगा।" },
+  timeliness: { en: "Work done on time", hi: "समय पर काम" },
+  yield: { en: "Harvest vs plan", hi: "योजना के मुकाबले उपज" },
+  quality: { en: "Harvest quality", hi: "उपज की गुणवत्ता" },
+  health: { en: "Crop problems handled", hi: "फसल समस्या संभालना" },
+  efficiency: { en: "Careful use of inputs", hi: "सामग्री का सही उपयोग" },
+  noData: { en: "No data", hi: "जानकारी नहीं" },
+  measured: { en: "measured", hi: "मापा गया" },
+  noReading: { en: "No reading yet", hi: "अभी कोई रीडिंग नहीं" },
+  noReports: { en: "You have not sent any reports yet.", hi: "आपने अभी कोई रिपोर्ट नहीं भेजी है।" },
+  riskMedium: { en: "Keep an eye on the leaves", hi: "पत्तियों पर नज़र रखें" },
+  riskMediumBody: { en: "A crop problem was reported in the area. Check a few plants when you visit.", hi: "इलाके में फसल समस्या बताई गई है। जाते समय कुछ पौधे देखें।" },
+  settingsTitle: { en: "Settings", hi: "सेटिंग" },
+  voice: { en: "Voice", hi: "आवाज़" },
+  account: { en: "Account", hi: "खाता" },
+  loginId: { en: "Login ID", hi: "लॉगिन आईडी" },
+  on: { en: "On", hi: "चालू" },
+  off: { en: "Off", hi: "बंद" },
+  readAloudHint: { en: "Answers are read aloud using your browser's voice, when it has one for your language.", hi: "जवाब आपके ब्राउज़र की आवाज़ से पढ़े जाते हैं, अगर आपकी भाषा उपलब्ध हो।" },
+  startDesc: { en: "Tell the owner you have started", hi: "मालिक को बताएं कि काम शुरू किया" },
+  reportSummaryTitle: { en: "Your report", hi: "आपकी रिपोर्ट" },
+  readyTitle: { en: "What do you want to tell Urvara?", hi: "Urvara को क्या बताना है?" },
+  machineMissing: { en: "Machine", hi: "मशीन" },
+} as const;
+
+export type ExtraKey = keyof typeof extra;
+
+export function tx(lang: Language, key: ExtraKey): string {
+  return extra[key][lang];
+}

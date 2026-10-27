@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// Roles come from Firebase Auth custom claims, which only the Admin SDK can set
+// (seed script and /api/farmers). A role value sent by the browser is never trusted.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner() { return signedIn() && request.auth.token.role == 'owner'; }
+    function isFarmer() { return signedIn() && request.auth.token.role == 'farmer'; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function active() { return me().status != 'deactivated'; }
+    function onlyChanges(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    match /meta/{doc} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner() || request.auth.uid == uid;
+      allow write: if isOwner();
+      // A farmer may change only their own language preference and first-login status.
+      allow update: if request.auth.uid == uid && onlyChanges(['language', 'status'])
+        && request.resource.data.status in ['active', resource.data.status];
+    }
+
+    match /farms/{id} {
+      allow read: if isOwner() || (isFarmer() && active() && id in me().farmIds);
+      allow write: if isOwner();
+    }
+
+    match /fields/{id} {
+      allow read: if isOwner() || (isFarmer() && active() && id in me().fieldIds);
+      allow write: if isOwner();
+    }
+
+    match /tasks/{id} {
+      allow read: if isOwner() || (isFarmer() && active() && resource.data.assigneeId == request.auth.uid);
+      allow create, delete: if isOwner();
+      allow update: if isOwner()
+        || (isFarmer() && active() && resource.data.assigneeId == request.auth.uid
+            && onlyChanges(['status', 'blockerReason', 'completionNote', 'completedAt', 'changeNotice', 'needsAttention', 'history'])
+            && request.resource.data.status in ['in_progress', 'done', 'blocked']);
+    }
+
+    match /reports/{id} {
+      allow read: if isOwner() || (isFarmer() && resource.data.reporterId == request.auth.uid);
+      allow create: if isOwner() || (isFarmer() && active()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.fieldId in me().fieldIds
+        && request.resource.data.status in ['unverified', 'reviewed']);
+      allow update, delete: if isOwner();
+    }
+
+    match /sensorReadings/{id} {
+      allow read: if isOwner() || (isFarmer() && resource.data.fieldId in me().fieldIds);
+      allow write: if isOwner();
+    }
+
+    match /scoutingSuggestions/{id} {
+      allow read: if isOwner() || (isFarmer() && resource.data.fieldId in me().fieldIds);
+      allow write: if isOwner();
+    }
+
+    match /cropSeasons/{id} {
+      allow read: if isOwner() || (isFarmer() && resource.data.farmerId == request.auth.uid);
+      allow write: if isOwner();
+    }
+
+    match /rupeeScoreRecords/{id} {
+      allow read: if isOwner() || (isFarmer() && resource.data.farmerId == request.auth.uid);
+      allow write: if isOwner();
+    }
+
+    match /resources/{id} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /weather/{id} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+
+    match /proposals/{id} {
+      allow read, write: if isOwner();
+    }
+
+    match /auditEvents/{id} {
+      allow read: if isOwner();
+      // Anyone signed in may append an event about their own action; nobody may rewrite history.
+      allow create: if isOwner() || (signedIn() && request.resource.data.actorId == request.auth.uid);
+      allow update, delete: if false;
+    }
+  }
+}

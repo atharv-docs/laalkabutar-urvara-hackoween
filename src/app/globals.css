@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/*
+ * Urvara brand palette: the six source tokens are fixed by the brief.
+ * Semantic aliases map onto them; "-ink" shades exist only so small text in a
+ * brand hue still passes 4.5:1 on the ivory canvas.
+ */
+:root {
+  --color-deep-forest: #234735;
+  --color-sage-green: #8faf8a;
+  --color-harvest-gold: #d5a84b;
+  --color-terracotta: #b96f4e;
+  --color-warm-ivory: #f6f3e9;
+  --color-soil-brown: #66513e;
+}
+
+@theme {
+  --color-forest: #234735;
+  --color-forest-hover: #1b3a2b;
+  --color-forest-tint: #e2eae3;
+  --color-sage: #8faf8a;
+  --color-sage-ink: #44633e;
+  --color-sage-tint: #e5ece0;
+  --color-gold: #d5a84b;
+  --color-gold-ink: #74560f;
+  --color-gold-tint: #f4e8c9;
+  --color-terracotta: #b96f4e;
+  --color-terracotta-ink: #8c472b;
+  --color-terracotta-tint: #f4e1d7;
+  --color-ivory: #f6f3e9;
+  --color-soil: #66513e;
+
+  --color-canvas: #f6f3e9;
+  --color-surface: #fdfbf5;
+  --color-sunken: #eee9da;
+  --color-line: #ddd4c1;
+  --color-line-strong: #c9bda5;
+  --color-ink: #66513e;
+  --color-ink-strong: #3a2e22;
+  --color-ink-muted: #7a6754;
+
+  --font-sans: var(--font-mukta), ui-sans-serif, system-ui, sans-serif;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
+  --radius-control: 6px;
+  --radius-panel: 10px;
+
+  --shadow-panel: 0 1px 2px rgba(58, 46, 34, 0.06), 0 2px 8px rgba(58, 46, 34, 0.04);
+  --shadow-raised: 0 6px 24px rgba(35, 71, 53, 0.14), 0 2px 6px rgba(58, 46, 34, 0.08);
+
+  --animate-record: record-pulse 1.6s ease-out infinite;
+  --animate-rise: rise 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes record-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(185, 111, 78, 0.45); }
+  100% { box-shadow: 0 0 0 22px rgba(185, 111, 78, 0); }
+}
+
+@keyframes rise {
+  from { transform: translateY(6px); opacity: 0.4; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* Base styles live in the base layer so Tailwind utilities can override them. */
+@layer base {
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-feature-settings: "kern";
+}
+
+h1, h2, h3, h4 {
+  color: var(--color-ink-strong);
+  text-wrap: balance;
+  line-height: 1.2;
+}
+
+p { text-wrap: pretty; }
+
+::selection {
+  background: var(--color-gold-tint);
+  color: var(--color-ink-strong);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input, textarea, select { caret-color: var(--color-forest); }
+
+a { text-underline-offset: 3px; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-sunken) 25%, #f4f0e4 50%, var(--color-sunken) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 6px;
+}
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
