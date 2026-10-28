@@ -31,7 +31,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${mukta.variable} ${muktaMahee.variable} h-full antialiased`}>
+    // data-scroll-behavior keeps route changes jumping instantly to the top; only in-page scrolling glides.
+    <html lang="en" data-scroll-behavior="smooth" className={`${mukta.variable} ${muktaMahee.variable} h-full antialiased`}>
       <body className="min-h-full">
         <UrvaraProvider>{children}</UrvaraProvider>
       </body>

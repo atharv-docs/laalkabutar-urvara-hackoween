@@ -82,6 +82,7 @@ export function Chip({ tone = "neutral", icon: Icon, children, className }: { to
 export function Panel({
   title,
   description,
+  icon: Icon,
   actions,
   children,
   className,
@@ -89,6 +90,8 @@ export function Panel({
   id,
 }: {
   title?: ReactNode;
+  /** Optional header icon, set in a forest-tint tile beside the title. */
+  icon?: LucideIcon;
   description?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
@@ -100,9 +103,16 @@ export function Panel({
     <section id={id} className={cx("min-w-0 rounded-panel border border-line bg-surface shadow-panel", className)}>
       {(title || actions) && (
         <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-line px-4 py-3">
-          <div className="min-w-0">
-            {title && <h2 className="text-base font-semibold">{title}</h2>}
-            {description && <p className="mt-0.5 text-sm text-ink-muted">{description}</p>}
+          <div className="flex min-w-0 items-start gap-3">
+            {Icon && (
+              <span className="grid size-9 shrink-0 place-items-center rounded-control bg-forest-tint text-forest">
+                <Icon aria-hidden className="size-[1.125rem]" />
+              </span>
+            )}
+            <div className="min-w-0">
+              {title && <h2 className="text-base font-semibold">{title}</h2>}
+              {description && <p className="mt-0.5 text-sm text-ink-muted">{description}</p>}
+            </div>
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </header>
