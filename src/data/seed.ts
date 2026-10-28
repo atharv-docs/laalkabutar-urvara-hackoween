@@ -118,7 +118,6 @@ const tasks: Task[] = [
   task({ id: "tsk-009", title: "Paddy harvest", titleHi: "धान की कटाई", titlePa: "ਝੋਨੇ ਦੀ ਵਾਢੀ", type: "harvest", farmId: "farm-06", fieldId: "fld-12", crop: "paddy", assigneeId: F(8), start: at(1, 7), end: at(1, 12), due: at(2, 18), priority: "high", status: "scheduled", machineIds: ["res-m04"], rationale: "Grain moisture ~20%; delay risks shattering and lodging." }),
   task({ id: "tsk-010", title: "Drip irrigation", titleHi: "ड्रिप सिंचाई", titlePa: "ਡ੍ਰਿਪ ਸਿੰਚਾਈ", type: "irrigation", farmId: "farm-03", fieldId: "fld-06", crop: "tomato", assigneeId: F(2), start: at(2, 7), end: at(2, 9), due: at(3, 12), priority: "medium", status: "scheduled", inputs: [{ resourceId: "res-w01", quantity: 40 }], rationale: "Scheduled 3-day irrigation cycle during fruiting." }),
   task({ id: "tsk-011", title: "Drip irrigation", titleHi: "ड्रिप सिंचाई", titlePa: "ਡ੍ਰਿਪ ਸਿੰਚਾਈ", type: "irrigation", farmId: "farm-01", fieldId: "fld-02", crop: "tomato", assigneeId: F(1), start: at(0, 17), end: at(0, 19), due: at(0, 20), priority: "high", status: "scheduled", inputs: [{ resourceId: "res-w01", quantity: 35 }], rationale: "Soil moisture 19% is below the 22% threshold during flowering." }),
-  task({ id: "tsk-012", title: "Scout Field 1 for leaf spots", titleHi: "खेत 1 में पत्तियों के धब्बों की जांच", titlePa: "ਖੇਤ 1 ਵਿੱਚ ਪੱਤਿਆਂ ਦੇ ਧੱਬਿਆਂ ਦੀ ਜਾਂਚ", type: "scouting", farmId: "farm-01", fieldId: "fld-01", crop: "tomato", assigneeId: F(1), start: at(0, 10), end: at(0, 11), due: at(0, 18), priority: "high", status: "scheduled", rationale: "Suggested by risk check on report rpt-001 (3.4 km away, same crop). Unverified report: inspect lower leaves and record what you find.", history: hist("Created from scouting suggestion", "2026-10-27T18:10:00+05:30") }),
   task({ id: "tsk-013", title: "Furrow irrigation", titleHi: "नाली से सिंचाई", titlePa: "ਨਾਲੀਆਂ ਰਾਹੀਂ ਸਿੰਚਾਈ", type: "irrigation", farmId: "farm-05", fieldId: "fld-11", crop: "sugarcane", assigneeId: F(7), start: at(0, 6), end: at(0, 8), due: at(0, 10), priority: "medium", status: "done", completedAt: at(0, 7, 55), completionNote: "Finished irrigation in sugarcane field", inputs: [{ resourceId: "res-w02", quantity: 0 }], rationale: "Weekly cycle.", history: [...hist("Created and assigned"), { at: at(0, 7, 55), actor: F(7), text: "Completed via report rpt-003" }] }),
   task({ id: "tsk-014", title: "Pruning – block 3 cane removal", titleHi: "छंटाई – ब्लॉक 3", titlePa: "ਕਟਾਈ-ਛੰਟਾਈ – ਬਲਾਕ 3", type: "pruning", farmId: "farm-02", fieldId: "fld-04", crop: "grapes", assigneeId: F(3), start: at(-1, 8), end: at(-1, 17), due: at(-1, 18), priority: "medium", status: "scheduled", rationale: "October fruit pruning must finish this week to keep bud break uniform." }),
   task({ id: "tsk-015", title: "Drip irrigation", titleHi: "ड्रिप सिंचाई", titlePa: "ਡ੍ਰਿਪ ਸਿੰਚਾਈ", type: "irrigation", farmId: "farm-04", fieldId: "fld-08", crop: "onion", assigneeId: F(4), start: at(0, 7), end: at(0, 9, 30), due: at(0, 12), priority: "medium", status: "in_progress", inputs: [{ resourceId: "res-w02", quantity: 30 }], rationale: "Moisture 21% at bulbing.", history: [...hist("Created and assigned"), { at: at(0, 7, 5), actor: F(4), text: "Started" }] }),
@@ -348,7 +347,6 @@ function scoreHistory(): RupeeScoreRecord[] {
 const auditEvents: AuditEvent[] = [
   { id: "aud-001", at: "2026-10-27T17:40:00+05:30", actorId: F(2), action: "report.problem", entity: "rpt-001", summary: "New crop problem report on Field 1 – Canal rows (demo sample)" },
   { id: "aud-002", at: "2026-10-27T17:41:00+05:30", actorId: "system", action: "risk.assessed", entity: "rpt-001", summary: "Risk check flagged nearby tomato and chilli fields for scouting" },
-  { id: "aud-003", at: "2026-10-27T18:10:00+05:30", actorId: OWNER_ID, action: "task.created", entity: "tsk-012", summary: 'Created "Scout Field 1 for leaf spots" from a scouting suggestion' },
   { id: "aud-004", at: at(0, 7, 40), actorId: F(2), action: "task.blocked", entity: "tsk-018", summary: "Zinc sulphate application: Blocked, reason: input not available" },
   { id: "aud-005", at: at(0, 7, 55), actorId: F(7), action: "task.done", entity: "tsk-013", summary: "Furrow irrigation: Completed via report rpt-003" },
 ].reverse();
@@ -374,11 +372,12 @@ export function createSeedState(): UrvaraState {
   };
   // Risk suggestions for the seeded report are computed by the real risk module, as of when it was filed.
   const filedState = { ...base, now: reports[0].createdAt };
-  base.scoutingSuggestions = assessReport(filedState, base.reports[0]).map((s, i) => ({
-    ...s,
-    id: `sct-${String(i + 1).padStart(3, "0")}`,
-    ...(s.fieldId === "fld-01" ? { status: "task_created" as const, taskId: "tsk-012" } : {}),
-  }));
+  base.scoutingSuggestions = assessReport(filedState, base.reports[0])
+    .filter((s) => s.fieldId !== "fld-01")
+    .map((s, i) => ({
+      ...s,
+      id: `sct-${String(i + 1).padStart(3, "0")}`,
+    }));
   return base;
 }
 
