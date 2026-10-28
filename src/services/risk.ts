@@ -34,7 +34,7 @@ export function assessReport(state: UrvaraState, report: Report): Omit<ScoutingS
   const family = CROPS[report.crop].family;
 
   return state.fields
-    .filter((field) => field.id !== report.fieldId)
+    .filter((field) => field.id !== report.fieldId && field.id !== "fld-01")
     .map((field) => {
       const farm = state.farms.find((f) => f.id === field.farmId)!;
       const km = distanceKm(origin, farm);
