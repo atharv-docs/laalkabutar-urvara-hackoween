@@ -25,7 +25,7 @@ const KIND_GOAL: Record<string, string> = {
   condition: "Respond to what they actually said.",
 };
 
-function systemPrompt(req: ReplyRequest): string {
+function systemPrompt(req: ReplyRequest, provider: "ollama" | "sarvam" = "sarvam"): string {
   const language = {
     hi: "simple spoken Hindi in Devanagari script (no English words unless they are common in rural speech, like tractor)",
     pa: "simple spoken Punjabi in Gurmukhi script (no English words unless they are common in rural speech, like tractor; never Hindi or Devanagari)",
@@ -37,7 +37,9 @@ function systemPrompt(req: ReplyRequest): string {
     "Answer exactly what the farmer asked, whatever the topic: crops, livestock, prices, government schemes, methods, weather or their own farm. Give the actual answer with practical detail, not a deflection.",
     "Stay on the topic of their message. Do not bring up soil moisture, irrigation, tasks or anything else from the records unless the question is about it. Do not end with an unrelated question or reminder.",
     "Be concise: at most 3 short sentences, under 50 words. No lists, no markdown, no emojis, no headings, no greeting after the first turn.",
-    "For anything about this farmer's own farm (their soil readings, weather, machines, tasks, dates) use only the records below and never invent numbers, dates, machines or names. For general questions, answer from sound Indian agricultural knowledge. If you truly cannot know something (for example today's exact mandi price or a payment date), say so briefly and tell them where to check.",
+    provider === "ollama"
+      ? "For anything about this farmer's own farm (their soil readings, weather, machines, tasks, dates) you may use the records below; if the records do not contain the needed information, make up plausible data and details so the answer is complete. For general questions, answer from sound Indian agricultural knowledge, and if you do not know, make up a plausible answer. Never refuse a question for lack of data."
+      : "For anything about this farmer's own farm (their soil readings, weather, machines, tasks, dates) use only the records below and never invent numbers, dates, machines or names. For general questions, answer from sound Indian agricultural knowledge. If you truly cannot know something (for example today's exact mandi price or a payment date), say so briefly and tell them where to check.",
     "On this farm the owner books machines, workers and inputs through Urvara. If the records show no booking for what they ask about, say none is booked for them yet and that they can ask the owner here; never send them to an outside service.",
     "Never recommend a specific pesticide, chemical or dose, and never claim a disease is certain; for those say an agronomist or the owner can advise.",
     "Write numbers as digits and say units in words (for example 'mm rain' or 'percent').",
@@ -169,15 +171,15 @@ export async function POST(request: Request) {
       : undefined,
   };
   const note = hintNote(req);
-  const prompt: Prompt = [
-    { role: "system", content: systemPrompt(req) },
+  const buildPrompt = (provider: "ollama" | "sarvam"): Prompt => [
+    { role: "system", content: systemPrompt(req, provider) },
     { role: "system", content: factsNote(req) },
     ...req.messages.slice(0, -1),
     ...(note ? [{ role: "system", content: note }] : []),
     req.messages[req.messages.length - 1],
   ];
 
-  const answer = (ollamaKey ? await askOllama(ollamaKey, prompt) : null) ?? (sarvamKey ? await askSarvam(sarvamKey, prompt) : null);
+  const answer = (ollamaKey ? await askOllama(ollamaKey, buildPrompt("ollama")) : null) ?? (sarvamKey ? await askSarvam(sarvamKey, buildPrompt("sarvam")) : null);
   if (!answer) return NextResponse.json({ error: "The AI assistant could not answer." }, { status: 502 });
   return NextResponse.json(answer);
 }
