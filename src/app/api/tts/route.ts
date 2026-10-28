@@ -9,10 +9,10 @@ export const runtime = "nodejs";
 const SARVAM_URL = "https://api.sarvam.ai/text-to-speech";
 const MAX_CHARS = 600;
 const LANGUAGES: Record<string, string> = { hi: "hi-IN", en: "en-IN", pa: "pa-IN" };
-/** The voice every install uses unless SARVAM_TTS_MODEL / SARVAM_TTS_SPEAKER override it. */
-const DEFAULT_MODEL = "bulbul:v4-flash";
+/** Fixed for every install: no environment variable can change the model or the voices. */
+const MODEL = "bulbul:v4-flash";
 /** Sarvam voices are built per language (the _hi_/_en_/_pa_ in the name), so each language gets its own conversational voice. */
-const DEFAULT_SPEAKER: Record<string, string> = {
+const SPEAKER: Record<string, string> = {
   hi: "amit_hi_conversational",
   en: "dev_en_conversational",
   pa: "anand_pa_conversation",
@@ -40,8 +40,8 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         text,
         language_code: language,
-        model: process.env.SARVAM_TTS_MODEL || DEFAULT_MODEL,
-        speaker: process.env.SARVAM_TTS_SPEAKER || DEFAULT_SPEAKER[String(body?.language)],
+        model: MODEL,
+        speaker: SPEAKER[String(body?.language)],
         pace: 0.95,
         output_audio_codec: "mp3",
       }),
