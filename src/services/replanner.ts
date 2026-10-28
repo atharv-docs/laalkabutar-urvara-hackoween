@@ -138,6 +138,15 @@ export function approveProposal(state: UrvaraState, proposalId: string, actorId:
   const tasks = state.tasks.map((t) => {
     const change = byTask.get(t.id);
     if (!change) return t;
+    if (change.cancel) {
+      return {
+        ...t,
+        status: "cancelled" as const,
+        needsAttention: undefined,
+        changeNotice: `Cancelled. ${change.reason.replace(/^Cancel\. /, "")}`,
+        history: [...t.history, { at: state.now, actor: actorId, text: `Cancelled by approved plan. Reason: ${change.reason}` }],
+      };
+    }
     if (!change.after) {
       return {
         ...t,
@@ -160,12 +169,13 @@ export function approveProposal(state: UrvaraState, proposalId: string, actorId:
     p.id === proposalId ? { ...p, status: "approved" as const, decidedAt: state.now, decidedBy: actorId } : p,
   );
   const moved = proposal.changes.filter((c) => c.after).length;
+  const cancelled = proposal.changes.filter((c) => c.cancel).length;
   return withAudit(
     { ...state, tasks, proposals },
     actorId,
     "proposal.approved",
     proposalId,
-    `Approved "${proposal.title}": ${moved} task(s) rescheduled, ${proposal.changes.length - moved} flagged for attention.`,
+    `Approved "${proposal.title}": ${moved} task(s) rescheduled${cancelled ? `, ${cancelled} cancelled` : ""}, ${proposal.changes.length - moved - cancelled} flagged for attention.`,
   );
 }
 

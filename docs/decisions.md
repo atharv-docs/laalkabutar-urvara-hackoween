@@ -64,6 +64,17 @@
   - Replies play by themselves: the farmer's tap (mic, send, sample) unlocks a Web Audio context, which browsers then allow to play the reply when it arrives seconds later.
 - **Why:** an LLM explains naturally in Hindi; grounding it in the records and the rule-based answer keeps it honest.
 
+## n8n farm coordinator: advisory, per farm, deadline-checked
+
+- A forecast change is an event: when the weather replan is drafted, the owner's browser sends one `WEATHER_CHANGED` event per farm with rain in the next 72 h and upcoming work, through `/api/farm-events` so the webhook URL stays on the server. One event per farm because the workflow's validator rejects cross-farm tasks.
+- Every task names a resource (its machine, else its main input such as canal water or fertiliser). Without one the agent invented IDs like "none" and the validator rightly failed the plan. Spare machines of the same kind are included so it can suggest a swap.
+- Its plan is shown beside Urvara's deterministic replan and stored on the proposal, never applied. Approve still applies Urvara's plan; the owner-approval step in n8n is a placeholder.
+- Deadlines are sent, and Urvara marks any move past a task's due date as failed, because the workflow's validator does not check them. When a farm has no safe window before a deadline (Godavari's sulphur spray in the storm scenario) the agent currently fails to produce output and the panel says "No usable plan"; Urvara's replan flags the same task for the owner.
+- The workflow checks for past dates against the real clock, while Urvara runs on a fixed demo clock (28 Oct 2026). After that date its validator will reject the demo's dates.
+
+- For judging there is also a fixed demo event (`src/data/coordinatorDemo.ts`) for Sahyadri Farm. Here the coordinator's answer is not just advice: it becomes a normal replan proposal (trigger `coordinator`). Urvara applies only `RESCHEDULE_TASK` (first free, dry slot on the requested day, before the deadline) and `CANCEL_TASK`; anything else is listed as not applied. The event's `rules` steer the agent towards those two actions. When the live call fails or nothing survives the checks, a pre-set answer in the webhook's own shape is used, marked `source: "preset"` with the reason, and shown as *Pre-set demo answer*, never as a live run.
+- The *Live n8n workflow* page draws the workflow from its documented structure (`src/data/n8nWorkflow.ts`) rather than reading it from n8n: n8n Cloud refuses to be framed, and the n8n API needs a key we chose not to use. The path a run took is worked out from the webhook's HTTP status and reply (invalid event, AI failure fallback, approval needed or not, saved or not), then replayed node by node at a fixed pace. Each node shows the part of the reply, or of the event sent, it is responsible for. The page says all this; it does not claim per-node timings. If the workflow changes in n8n, update that file.
+
 ## Rupee Score
 - **Decision:** a 0–100 index per farmer × crop × season, built from five weighted components: timeliness 30, yield 25, quality 15, health handling 15, efficiency 15.
   - Late tasks excused for causes outside the farmer's control are not counted.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, ChevronDown, CloudLightning, MessageSquareWarning, Undo2, Wrench, X } from "lucide-react";
+import { ArrowRight, Ban, Bot, Check, ChevronDown, CloudLightning, MessageSquareWarning, Undo2, Wrench, X } from "lucide-react";
 import type { ReplanProposal } from "@/types";
 import { useReadyState } from "@/components/providers/UrvaraProvider";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -9,6 +9,7 @@ import { Button, Chip, Label, TextArea, cx } from "@/components/ui/primitives";
 import { approveProposal, decideProposal } from "@/services/replanner";
 import { actorName } from "@/services/audit";
 import { ageLabel, fmtRange } from "@/lib/time";
+import { CoordinatorPanel } from "./CoordinatorPanel";
 import { ScheduleBoard } from "./ScheduleBoard";
 
 /** Before/after review of a replan with an explicit owner decision. */
@@ -20,8 +21,9 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
   const [showUnchanged, setShowUnchanged] = useState(false);
   const pending = proposal.status === "pending";
   const moved = proposal.changes.filter((c) => c.after);
-  const unresolved = proposal.changes.filter((c) => !c.after);
-  const Icon = proposal.trigger === "weather" ? CloudLightning : Wrench;
+  const cancelled = proposal.changes.filter((c) => c.cancel);
+  const unresolved = proposal.changes.filter((c) => !c.after && !c.cancel);
+  const Icon = proposal.trigger === "weather" ? CloudLightning : proposal.trigger === "coordinator" ? Bot : Wrench;
 
   const taskLabel = (taskId: string) => {
     const t = state.tasks.find((x) => x.id === taskId);
@@ -49,7 +51,9 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
           </div>
           <p className="mt-0.5 text-ink">{proposal.summary}</p>
           <p className="mt-0.5 text-sm text-ink-muted">
-            Drafted by the Urvara planner {ageLabel(proposal.createdAt, state.now)} using deterministic rules (weather limits, machine travel buffer, farmer availability, deadlines).
+            {proposal.trigger === "coordinator"
+              ? `Drafted ${ageLabel(proposal.createdAt, state.now)} from an n8n farm coordinator decision, then checked by the Urvara planner (weather limits, machine travel buffer, farmer availability, deadlines).`
+              : `Drafted by the Urvara planner ${ageLabel(proposal.createdAt, state.now)} using deterministic rules (weather limits, machine travel buffer, farmer availability, deadlines).`}
             {proposal.decidedBy && ` Decided by ${actorName(state, proposal.decidedBy)}${proposal.decisionNote ? `: “${proposal.decisionNote}”` : "."}`}
           </p>
         </div>
@@ -78,7 +82,7 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
               const machinesBefore = c.before.machineIds.map((id) => state.resources.find((r) => r.id === id)?.name).join(", ");
               const machinesAfter = c.after?.machineIds.map((id) => state.resources.find((r) => r.id === id)?.name).join(", ");
               return (
-                <tr key={c.taskId} className={cx("border-b border-line/70 align-top last:border-0", !c.after && "bg-terracotta-tint/35")}>
+                <tr key={c.taskId} className={cx("border-b border-line/70 align-top last:border-0", !c.after && !c.cancel && "bg-terracotta-tint/35")}>
                   <td className="px-4 py-3">
                     <p className="font-semibold text-ink-strong">{t.title}</p>
                     <p className="text-ink-muted">{t.where}</p>
@@ -97,6 +101,10 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
                           {machinesAfter && <span className={cx("block font-normal", machinesAfter !== machinesBefore ? "text-gold-ink" : "text-ink-muted")}>{machinesAfter}</span>}
                         </span>
                       </span>
+                    ) : c.cancel ? (
+                      <Chip tone="neutral" icon={Ban}>
+                        {pending ? "Cancel task" : "Cancelled"}
+                      </Chip>
                     ) : (
                       <Chip tone="terracotta" icon={MessageSquareWarning}>
                         Needs your decision
@@ -137,6 +145,8 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
           )}
         </div>
       )}
+
+      {(proposal.trigger === "weather" || proposal.trigger === "coordinator") && <CoordinatorPanel proposal={proposal} />}
 
       {pending && (
         <footer className="border-t border-line bg-canvas/60 px-4 py-3">
@@ -195,6 +205,11 @@ export function ProposalReview({ proposal }: { proposal: ReplanProposal }) {
           <li>
             {moved.length} task{moved.length === 1 ? "" : "s"} move to new slots{moved.some((c) => c.after!.machineIds.join() !== c.before.machineIds.join()) ? ", including shared-machine reassignments" : ""}.
           </li>
+          {cancelled.length > 0 && (
+            <li>
+              {cancelled.length} task{cancelled.length === 1 ? " is" : "s are"} cancelled.
+            </li>
+          )}
           {unresolved.length > 0 && <li>{unresolved.length} task{unresolved.length === 1 ? " is" : "s are"} flagged for your follow-up; nothing is moved for {unresolved.length === 1 ? "it" : "them"}.</li>}
           <li>Assigned farmers see a “time changed” notice with the reason.</li>
           <li>Every change is written to the task history and audit log.</li>

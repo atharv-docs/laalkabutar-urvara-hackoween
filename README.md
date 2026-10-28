@@ -50,7 +50,8 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 4. **Farmer conversation and report (Journey A).** Sign in as Ramesh, tap **बोलें / Speak**, and talk to Urvara: speak, type, or tap a demo sample. Urvara replies aloud and the conversation continues. Say “टमाटर की पत्तियों पर पीले धब्बे हैं” and Urvara offers to send it to the owner; correct the details if needed and tap **मालिक को भेजें**. Back in **Owner → Crop Health**, the report is *unverified*, nearby fields are scored with reasons, and you can create a scouting task.
 5. **Rupee Score (Journey D).** Go to **Owner → Performance & Rupee Score**, choose Tomato · Kharif 2026 → Sunita Jadhav. The breakdown shows the records behind each component. Excuse a late task with a note: the score is recomputed and a new version with the reason is added to the history.
 6. **New farmer (Journey E).** Go to **Owner → Farmers → Add farmer**. Assign fields and copy the code, then sign in with it. The new farmer only sees their own fields. Assign them a task in Operations and complete it from the farmer side.
-7. **Reset.** *Settings & demo → Reset demo scenario* replays the story from the start.
+7. **n8n coordinator.** Open **Owner → Live n8n workflow** (or *Open live workflow* under Demo incidents) and click *Send event to n8n*. A fixed event (40 mm of rain on Sahyadri Farm on 29 Oct) goes to the live n8n webhook. When n8n answers (about 5–10 s), the path it took lights up on the workflow drawing; click any lit node to see its data from n8n's reply. Below, its plan opens as a replan: the fungicide spray moves to Fri 30 Oct and tonight's drip irrigation is cancelled. Approve it and both tasks change across the site; Ramesh sees the notices. If the webhook fails or its answer does not pass Urvara's checks, a pre-set answer is used and labelled *Pre-set demo answer* with the reason.
+8. **Reset.** *Settings & demo → Reset demo scenario* replays the story from the start.
 
 ## Feature status
 
@@ -64,6 +65,7 @@ A farmer added in **Owner → Farmers** gets a login ID and a one-time code, sho
 | Farmer accounts: create, assign, deactivate, reissue code | Working (demo: salted SHA-256 only; live: Firebase Auth via `/api/farmers`) |
 | Farmer voice report | Working with **Sarvam AI speech-to-text** (`saaras:v3`, `hi-IN`/`pa-IN`/`en-IN`) when `SARVAM_API_KEY` is set; otherwise browser speech recognition (Chrome/Edge). Typed fallback and labelled demo samples everywhere |
 | Spoken reply to the farmer | **Ollama Cloud** (`gemma4:31b`) writes a reply of at most 3 short sentences in Hindi, Punjabi or English, grounded in the farmer's own field, weather and task records; **Sarvam AI text-to-speech** (`bulbul:v3`) reads it aloud. Without `OLLAMA_API_KEY`, Sarvam's chat model (`sarvam-105b-conversations`) answers with the same Sarvam key; replies play automatically |
+| n8n farm coordinator | Working when `N8N_FARM_EVENT_URL` is set. A forecast change sends one `WEATHER_CHANGED` event per affected farm to the n8n "Autonomous Farm Coordinator" workflow; its AI plan and validator results appear under the weather replan as an advisory second opinion. Urvara also flags any move past a task's deadline. Nothing it proposes changes the schedule |
 | Intent extraction (English + Hindi) | Rule-based, with farmer confirmation before saving |
 | Farmer questions (“Should I irrigate today?”) | Answered from field data, with source and timestamp; unanswerable questions are forwarded to the owner |
 | Crop-risk scouting suggestions | Working, explainable rules; never a diagnosis |
@@ -83,6 +85,7 @@ Copy `.env.example` to `.env.local`.
 - **`FIREBASE_SERVICE_ACCOUNT_KEY`**: server-only service-account JSON, used by `/api/farmers` and the seed script. Never commit it.
 - **`SARVAM_API_KEY`**: server-only Sarvam AI key. The browser records a clip of up to 28 s and posts it to `/api/speech-to-text`, which adds the key and calls Sarvam. Leave it empty to use the browser's own speech recognition. `SARVAM_STT_MODEL` optionally overrides the model (default `saaras:v3`). The same key powers `/api/tts` (`SARVAM_TTS_MODEL`, `SARVAM_TTS_SPEAKER` optional).
 - **`OLLAMA_API_KEY`**: server-only Ollama Cloud key (ollama.com/settings/keys). `/api/assistant` sends the farmer's confirmed words plus a short summary of their own records and returns the spoken reply. `OLLAMA_MODEL` optionally overrides the model (default `gemma4:31b`).
+- **`N8N_FARM_EVENT_URL`**: server-only production webhook of the n8n farm coordinator workflow. `/api/farm-events` forwards events to it (about 6–12 s each). The webhook itself has no authentication, so keep the URL out of client code and out of git.
 
 ### Using Firebase
 

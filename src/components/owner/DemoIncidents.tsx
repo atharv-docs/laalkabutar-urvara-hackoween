@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CloudLightning, FlaskConical, RotateCcw, Wrench } from "lucide-react";
+import { Bot, CloudLightning, FlaskConical, RotateCcw, Wrench } from "lucide-react";
 import { useReadyState } from "@/components/providers/UrvaraProvider";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button, Panel } from "@/components/ui/primitives";
@@ -19,6 +20,7 @@ export function DemoIncidents({ compact = false }: { compact?: boolean }) {
   const machine = state.resources.find((r) => r.id === DEMO_BREAKDOWN_MACHINE);
   const weatherDone = state.scenario.weatherChanged;
   const machineDone = machine?.status !== "available";
+  const coordinatorDone = state.proposals.some((p) => p.trigger === "coordinator");
 
   return (
     <Panel
@@ -30,7 +32,7 @@ export function DemoIncidents({ compact = false }: { compact?: boolean }) {
       }
       description={compact ? undefined : "Trigger a real event in the synthetic scenario and watch Urvara coordinate the response. Reset to replay."}
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div className="flex flex-col rounded-control border border-line p-3">
           <p className="font-semibold text-ink-strong">Forecast flips to rain</p>
           <p className="mt-0.5 flex-1 text-sm text-ink">Thunderstorms Thu afternoon to Fri morning over Dindori and Niphad. Sprays, fertiliser and irrigation get replanned.</p>
@@ -72,6 +74,19 @@ export function DemoIncidents({ compact = false }: { compact?: boolean }) {
           >
             {machineDone ? "Already out of service" : "Break the sprayer"}
           </Button>
+        </div>
+        <div className="flex flex-col rounded-control border border-line p-3">
+          <p className="font-semibold text-ink-strong">n8n coordinator: heavy rain on Sahyadri Farm</p>
+          <p className="mt-0.5 flex-1 text-sm text-ink">
+            Sends a fixed weather event (40 mm on 29 Oct) to the live n8n workflow and shows each node running. Its answer becomes a replan you approve, which moves or cancels the tasks.
+          </p>
+          <Link
+            href="/owner/automation"
+            className="mt-3 inline-flex h-10 items-center gap-2 self-start rounded-control bg-gold px-3.5 text-[0.9375rem] font-semibold text-ink-strong transition-colors hover:bg-[#c99b3d]"
+          >
+            <Bot aria-hidden className="size-4" />
+            {coordinatorDone ? "See the run and result" : "Open live workflow"}
+          </Link>
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-line pt-3">

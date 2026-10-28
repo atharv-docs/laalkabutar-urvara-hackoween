@@ -271,11 +271,14 @@ export interface ScheduleChange {
   resourcesAffected: string[];
   /** Set when no safe slot exists before the deadline. */
   unresolved?: string;
+  /** Approving cancels the task instead of moving it (after is null). */
+  cancel?: boolean;
 }
 
 export interface ReplanProposal {
   id: string;
-  trigger: "weather" | "machine" | "manual";
+  /** coordinator: built from an n8n farm coordinator decision. */
+  trigger: "weather" | "machine" | "manual" | "coordinator";
   title: string;
   summary: string;
   createdAt: string;
@@ -286,6 +289,40 @@ export interface ReplanProposal {
   decidedAt?: string;
   decidedBy?: string;
   decisionNote?: string;
+  /** Advisory plans from the n8n farm coordinator, one per affected farm. Never applied to the schedule. */
+  coordinator?: CoordinatorReview[];
+}
+
+/** One run of the n8n "Autonomous Farm Coordinator" workflow, as returned by /api/farm-events. */
+export interface CoordinatorReview {
+  farmId: string;
+  runId: string;
+  /** proposed: valid, no approval needed; pending_approval: valid, owner must approve; rejected: AI failed or plan invalid. */
+  status: "proposed" | "pending_approval" | "rejected";
+  summary: string;
+  riskLevel?: string;
+  actions: CoordinatorAction[];
+  /** Plan-level problems found by the workflow's deterministic validator. */
+  issues: string[];
+  /** Whether n8n saved the decision to its farm_decisions Data Table. */
+  saved: boolean;
+  /** Demo-clock time the event was sent. */
+  at: string;
+  /** live: returned by the n8n webhook just now. preset: Urvara's pre-decided demo answer, used when the live call fails. */
+  source?: "live" | "preset";
+  /** Why the preset answer was used. */
+  fallbackReason?: string;
+}
+
+export interface CoordinatorAction {
+  type: string;
+  taskId?: string;
+  resourceId?: string;
+  newDate?: string;
+  magnitude?: string;
+  description: string;
+  valid: boolean;
+  issues: string[];
 }
 
 export interface ScoutingSuggestion {
@@ -337,3 +374,14 @@ export interface UrvaraState {
 }
 
 export type CollectionName = Exclude<keyof UrvaraState, "schemaVersion" | "now" | "scenario">;
+
+/** The n8n coordinator workflow as drawn on the Live workflow page. */
+export interface N8nGraph {
+  id: string;
+  name: string;
+  active: boolean;
+  nodes: { name: string; type: string; x: number; y: number; disabled?: boolean }[];
+  /** kind "main" carries items; other kinds (ai_languageModel, ai_outputParser…) attach a sub-node to an agent. */
+  edges: { from: string; to: string; kind: string; output: number }[];
+}
+

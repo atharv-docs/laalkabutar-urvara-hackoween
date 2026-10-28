@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
   Bell,
+  Bot,
   CalendarClock,
   CloudSun,
   IndianRupee,
@@ -52,6 +53,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { href: "/owner/operations", label: "Operations & Tasks", icon: CalendarClock, badge: "approvals" },
       { href: "/owner/farmers", label: "Farmers", icon: Users },
       { href: "/owner/resources", label: "Resources", icon: Tractor },
+      { href: "/owner/automation", label: "Live n8n workflow", icon: Bot },
       { href: "/owner/scouting", label: "Scouting", icon: MapPin, future: true },
     ],
   },
